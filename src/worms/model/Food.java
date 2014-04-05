@@ -16,20 +16,42 @@ public class Food {
 		
 	}
 	
+	
+	/**
+	 * getX() gives back the X coordinate of the object Food
+	 * 
+	 * @return this.x
+	 */
 	public double getX(){
 		
-		return X;
+		return this.X;
 	}
+	/**
+	 * getY() gives back the Y coordinate of the object Food
+	 * 
+	 * @return this.y
+	 */
 	public double getY(){
 		
-		return Y;
+		return this.Y;
 		
 	}
+	/**
+	 * getFoodIncrease () gives back the multiplier (1.1) of
+	 * the increase (0.1) in the object worm's radius
+	 * 
+	 * @return foodIncrease (=1.1 == 10% increase)
+	 */
 	public double getFoodIncrease(){
 		
 		return foodIncrease;
 		
 	}
+	/**
+	 * getFoodRadius() gives back the radius of the object food
+	 * 
+	 * @return foodRadius = 0.2 meters
+	 */
 	public double getFoodRadius(){
 		
 		return foodRadius;
