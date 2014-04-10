@@ -201,7 +201,7 @@ public class Projectile {
 	 * 			The x-coordinate, after having traveled the distance of the shot, has to be valid.
 	 * 			| !Worm.isValidX(this.getX() + this.getJumpDistance())
 	 */
-	public void jump() throws ArithmeticException {
+	public void jump(double timeStep) throws ArithmeticException {
 		// TODO Hit an impassable object / worm? => Explode!
 		if (!Worm.isValidX(this.getX() + this.getJumpDistance()))
 			throw new ArithmeticException();
@@ -275,7 +275,7 @@ public class Projectile {
 	 * @post	The Hit Points of the worm that has been hit have to be adjusted, according to the number of Hit Points that should be removed for a certain projectile.
 	 * 			| hitWorm.setHitPoints(hitWorm.getHitPoints() - this.getHitPointsReduction())
 	 * @post	If the amount of Hit Points of the hit worm became 0 by hitting it, the hit worm will be terminated (i.e. he died).
-	 * 			| if (!hitWorm.checkVitals())
+	 * 			| if (!hitWorm.isAlive())
 	 * 			|	then (hitWorm.terminate())
 	 */
 	public void hit(Worm hitWorm) {
@@ -283,19 +283,36 @@ public class Projectile {
 		if (!hitWorm.isAlive())
 			hitWorm.terminate();
 	}
-
+// 3² = x <=> 2 = ³log(x)
+	// r³ = x => r = ?
+	// r = \³|x
+	// TODO Derdemachtswortel!!!!!!!
 	public double getRadius() {
-		// TODO Auto-generated method stub
-		return 0;
+		double volume = mass / density;
+		return (volume * 3) / (4 * Math.PI); // Hiervan derdemachtswortel teruggeven!!!
 	}
 
+	/**
+	 * Method that checks whether or not this projectile is active (i.e. its 
+	 * reference is not null).
+	 * 
+	 * @return true
+	 * 			This projectile is active
+	 * @return false
+	 * 			This projectile is inactive.
+	 */
 	public boolean isActive() {
-		// TODO Auto-generated method stub
-		return false;
+		return (this != null);
 	}
-
-	public void jump(double timeStep) {
-		// TODO Auto-generated method stub
-		
+	
+	/**
+	 * Function that terminates this projectile.
+	 * 
+	 * @return null
+	 * 			The new value for this projectile.
+	 */
+	public Projectile terminate() {
+		this.worm = null;
+		return null;
 	}
 }
