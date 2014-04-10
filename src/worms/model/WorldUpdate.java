@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Random;
 
-// TODO getHSB() to compare colors.
-
 /**
  * A class that implements all the aspects of the game world.
  * 
@@ -26,6 +24,7 @@ public class World {
 	private ArrayList<Team> collectionOfTeams;
 	private Worm currentWorm;
 	private Projectile activeProjectile;
+	private boolean[][] area;
 
 	/**
 	 * Constructor of the class World.
@@ -53,6 +52,7 @@ public class World {
 			throw new IllegalArgumentException();
 		this.width = width;
 		this.height = height;
+		this.area = passableMap;
 	}
 
 	/**
@@ -108,15 +108,21 @@ public class World {
 	/**
 	 * Function that adds a worm to this world.
 	 */
+	// TODO The (x,y)-coordinate has to be adjacent to impassable terrain.
 	public void addWormToWorld() {
-		this.collectionOfWorms.add(arg0);
+		this.collectionOfWorms.add(new Worm(this, Math.abs(new Random()
+				.nextInt()), Math.abs(new Random().nextInt()), Math
+				.abs(new Random().nextInt()), Math.abs(new Random().nextInt()),
+				"Default Name"));
 	}
 
 	/**
 	 * Function that adds a piece of food to this world.
 	 */
+	// TODO The (x,y)-coordinate has to be adjacent to impassable terrain.
 	public void addFoodToWorld() {
-		this.collectionOfFood.add(arg0);
+		this.collectionOfFood.add(new Food(Math.abs(new Random().nextInt()),
+				Math.abs(new Random().nextInt())));
 	}
 
 	/**
@@ -260,8 +266,7 @@ public class World {
 	 * 			There is no impassable terrain on the provided radius around the provided coordinates
 	 */
 	public boolean isImpassable(double x, double y, double radius) {
-		// TODO Auto-generated method stub
-		return false;
+		return (!area[(int) (this.getHeight() - y)][(int) x]);
 	}
 
 	/**
@@ -332,8 +337,28 @@ public class World {
 	 */
 	public Worm createWorm(double x, double y, double direction, double radius,
 			String name) {
-		Worm worm = new Worm(x, y, direction, radius, name);
+		Worm worm = new Worm(this, x, y, direction, radius, name);
 		this.collectionOfWorms.add(worm);
 		return worm;
+	}
+
+	/**
+	 * Method that checks whether the object with the provided (x,y)-coordinates and radius lies in this world or not.
+	 * 
+	 * @param x
+	 * 			The x-coordinate of the object
+	 * @param y
+	 * 			The y-coordinate of the object
+	 * @param radius
+	 * 			The radius of the object
+	 * @return true
+	 * 			The object, whose properties were used, lies in this world
+	 * @return false
+	 * 			The object, whose properties were used, doesn't lie in this world
+	 */
+	public boolean liesInWorld(double x, double y, double radius) {
+		return ((x + radius <= this.getWidth())
+				&& (x - radius >= this.lowerBoundX) && (y + radius <= this
+				.getHeight() && (y - radius >= this.lowerBoundY)));
 	}
 }
