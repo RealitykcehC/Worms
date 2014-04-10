@@ -74,8 +74,16 @@ public class Food {
 		return this.radius;
 	}
 
+	/**
+	 * Method that checks whether or not this piece of food is active (i.e. 
+	 * this piece of food is not a null reference).
+	 * 
+	 * @return true
+	 * 			This piece of food is active
+	 * @return false
+	 * 			This piece of food is not active
+	 */
 	public boolean isActive() {
-		// TODO Auto-generated method stub
-		return false;
+		return (this != null);
 	}
 }
