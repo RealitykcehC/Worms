@@ -11,7 +11,7 @@ import worms.model.Worm;
  * @author Pieter Jan Vingerhoets & Mathijs Nelissen
  * @version 1.0
  */
-public class Facade implements IFacade{
+public class Facade implements IFacade {
 
 	/**
 	 * Function that adds an empty team with the provided team name to the provided world.
@@ -40,7 +40,7 @@ public class Facade implements IFacade{
 	 * @param world
 	 * 			The world to which the piece of food has to be added
 	 * @effect	The world has to contain the newly created piece of food.
-	 * 			| world.getFood().contains(...)
+	 * 			| world.getFood().contains(newFood)
 	 * @throws	ModelException
 	 * 			The world is an empty reference (a null pointer), an exception has to be thrown.
 	 * 			| world == null
@@ -57,6 +57,8 @@ public class Facade implements IFacade{
 	 * 
 	 * @param world
 	 * 			The world to which a new worm has to be added
+	 * @effect	The worm should be added to the provided world.
+	 * 			| world.getWorms().contains(newWorm)
 	 * @throws	ModelException
 	 * 			The world is an empty reference (a null pointer), an exception has to be thrown.
 	 * 			| world == null
@@ -117,6 +119,8 @@ public class Facade implements IFacade{
 	 * 			The provided x-coordinate for the to be created piece of food
 	 * @param y
 	 * 			The provided y-coordinate for the to be created piece of food
+	 * @effect	The world has to contain a piece of food with the provided coordinates.
+	 * 			| world.getFood().contains(createdFood)
 	 * @return world.createFood(x,y)
 	 * 			The newly created piece of food with coordinates (x,y) in the given world
 	 * @throws	ModelException
@@ -124,7 +128,8 @@ public class Facade implements IFacade{
 	 * 			| world == null
 	 */
 	@Override
-	public Food createFood(World world, double x, double y) throws ModelException {
+	public Food createFood(World world, double x, double y)
+			throws ModelException {
 		if (world == null)
 			throw new ModelException("Invalid world: null");
 		return world.createFood(x, y);
@@ -138,12 +143,13 @@ public class Facade implements IFacade{
 	 * @param height
 	 * 			The height of the to be created world
 	 * @param passableMap
-	 * 			...
+	 * 			The array that describes the passable/ impassable parts of the map
 	 * @param random
 	 * 			...
 	 * @return new World(width, height, passableMap, random)
 	 * 			The newly created world with the provided properties
 	 */
+	// TODO ...
 	@Override
 	public World createWorld(double width, double height,
 			boolean[][] passableMap, Random random) {
@@ -165,6 +171,8 @@ public class Facade implements IFacade{
 	 * 			The radius of the to be created worm
 	 * @param name
 	 * 			The name of the to be created worm
+	 * @effect	The provided world has to contain the newly created worm.
+	 * 			| world.getWorms().contains(createdWorm)
 	 * @return world.createWorm(x, y, direction, radius, name)
 	 * 			The newly created worm with the given properties in the provided world
 	 * @throws	ModelException
@@ -184,6 +192,8 @@ public class Facade implements IFacade{
 	 * 
 	 * @param worm
 	 * 			The worm that has to fall
+	 * @effect	The provided worm has to be adjacent to impassable terrain.
+	 * 			| worm.getWorld().isAdjacent(worm.getX(), worm.getY(), worm.getRadius())
 	 * @throws	ModelException
 	 * 			The worm is an empty reference (a null pointer), an exception has to be thrown.
 	 * 			| worm == null
@@ -281,7 +291,8 @@ public class Facade implements IFacade{
 	 * 			| projectile == null
 	 */
 	@Override
-	public double[] getJumpStep(Projectile projectile, double t) throws ModelException {
+	public double[] getJumpStep(Projectile projectile, double t)
+			throws ModelException {
 		if (projectile == null)
 			throw new ModelException("Invalid projectile: null");
 		return projectile.getJumpStep(t);
@@ -301,7 +312,8 @@ public class Facade implements IFacade{
 	 * 			| projectile == null
 	 */
 	@Override
-	public double getJumpTime(Projectile projectile, double timeStep) throws ModelException {
+	public double getJumpTime(Projectile projectile, double timeStep)
+			throws ModelException {
 		if (projectile == null)
 			throw new ModelException("Invalid projectile: null");
 		return projectile.getJumpTime(timeStep);
@@ -593,7 +605,8 @@ public class Facade implements IFacade{
 	 * 			| world == null
 	 */
 	@Override
-	public boolean isAdjacent(World world, double x, double y, double radius) throws ModelException {
+	public boolean isAdjacent(World world, double x, double y, double radius)
+			throws ModelException {
 		if (world == null)
 			throw new ModelException("Invalid world: null");
 		return world.isAdjacent(x, y, radius);
@@ -661,7 +674,8 @@ public class Facade implements IFacade{
 	 * 			| world == null
 	 */
 	@Override
-	public boolean isImpassable(World world, double x, double y, double radius) throws ModelException {
+	public boolean isImpassable(World world, double x, double y, double radius)
+			throws ModelException {
 		if (world == null)
 			throw new ModelException("Invalid world: null");
 		return world.isImpassable(x, y, radius);
@@ -674,12 +688,15 @@ public class Facade implements IFacade{
 	 * 			The projectile that has to jump
 	 * @param timeStep
 	 * 			The time that the projectile will not hit any impassable terrain
+	 * @effect	The projectile has to have traveled the needed distance.
+	 * 			| new.projectile.getX() == projectile.getX() + projectile.getJumpDistance()
 	 * @throws	ModelException
 	 * 			The projectile is an empty reference (a null pointer), an exception has to be thrown.
 	 * 			| projectile == null
 	 */
 	@Override
-	public void jump(Projectile projectile, double timeStep) throws ModelException {
+	public void jump(Projectile projectile, double timeStep)
+			throws ModelException {
 		if (projectile == null)
 			throw new ModelException("Invalid projectile: null");
 		projectile.jump(timeStep);
@@ -692,6 +709,8 @@ public class Facade implements IFacade{
 	 * 			The worm that has to jump
 	 * @param timeStep
 	 * 			The time that the worm will not hit any impassable terrain
+	 * @effect	The worm has to have traveled the needed distance.
+	 * 			| new.worm.getX() == worm.getX() + worm.getJumpDistance()
 	 * @throws	ModelException
 	 * 			The worm is an empty reference (a null pointer), an exception has to be thrown.
 	 * 			| worm == null
@@ -708,6 +727,8 @@ public class Facade implements IFacade{
 	 * 
 	 * @param worm
 	 * 			The worm that has to move
+	 * @effect	The provided worm should have moved.
+	 * 			| new.worm.getX() != worm.getX() || new.worm.getY() != worm.getY()
 	 * @throws	ModelException
 	 * 			The worm is an empty reference (a null pointer), an exception has to be thrown.
 	 * 			| worm == null
@@ -724,6 +745,8 @@ public class Facade implements IFacade{
 	 * 
 	 * @param worm
 	 * 			The worm that as to switch weapons
+	 * @post	The weapon should have changed.
+	 * 			| new.worm.getSelectedWeapon() != worm.getSelectedWeapon()
 	 * @throws	ModelException
 	 * 			The worm is an empty reference (a null pointer), an exception has to be thrown.
 	 * 			| worm == null
@@ -743,10 +766,13 @@ public class Facade implements IFacade{
 	 * 			The worm that has to shoot
 	 * @param yield
 	 * 			The yield of the projectile
+	 * @effect	A projectile should be fired.
+	 * 			| ...
 	 * @throws	ModelException
 	 * 			The worm is an empty reference (a null pointer), an exception has to be thrown.
 	 * 			| worm == null
 	 */
+	// TODO ...
 	@Override
 	public void shoot(Worm worm, int yield) throws ModelException {
 		if (worm == null)
@@ -759,10 +785,13 @@ public class Facade implements IFacade{
 	 * 
 	 * @param world
 	 * 			The world in which the game has to start
+	 * @effect	The game has to have started after execution of this method.
+	 * 			| ...
 	 * @throws	ModelException
 	 * 			The world is an empty reference (a null pointer), an exception has to be thrown.
 	 * 			| world == null
 	 */
+	// TODO ...
 	@Override
 	public void startGame(World world) throws ModelException {
 		if (world == null)
@@ -775,10 +804,15 @@ public class Facade implements IFacade{
 	 * 
 	 * @param world
 	 * 			The world in which a next turn has to be started
+	 * @effect 	The next turn has to be started, i.e. the next worm has to have been selected, its 
+	 * 			Hit Points have to be increased by 10, respecting the limit of Hit Points and the 
+	 * 			Action Points of that worm have to be reset to the maximum amount of Action Points.
+	 * 			| ...
 	 * @throws	ModelException
 	 * 			The world is an empty reference (a null pointer), an exception has to be thrown.
 	 * 			| world == null
 	 */
+	// TODO ...
 	@Override
 	public void startNextTurn(World world) throws ModelException {
 		if (world == null)
@@ -841,7 +875,7 @@ public class Facade implements IFacade{
 			throw new ModelException("Invalid worm: null");
 		return worm.getJumpStep(t);
 	}
-	
+
 	/**
 	 * Function that returns the mass of the given worm.
 	 * 
