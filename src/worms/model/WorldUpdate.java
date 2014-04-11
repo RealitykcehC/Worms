@@ -15,10 +15,10 @@ public class World {
 	 * Declaration of variables.
 	 */
 	private double width, height;
-	private double lowerBoundX = 0.0;
-	private double lowerBoundY = 0.0;
-	private double upperBoundX = Double.MAX_VALUE;
-	private double upperBoundY = Double.MAX_VALUE;
+	public static final double lowerBoundX = 0.0;
+	public static final double lowerBoundY = 0.0;
+	public static final double upperBoundX = Double.MAX_VALUE;
+	public static final double upperBoundY = Double.MAX_VALUE;
 	private ArrayList<Worm> collectionOfWorms;
 	private ArrayList<Food> collectionOfFood;
 	private ArrayList<Team> collectionOfTeams;
@@ -47,8 +47,7 @@ public class World {
 	 */
 	public World(double width, double height, boolean[][] passableMap,
 			Random random) throws IllegalArgumentException {
-		if (!this.canHaveAsWidth(this.getWidth())
-				|| !this.canHaveAsHeight(this.getHeight()))
+		if (!isValidWidth(this.getWidth()) || !isValidHeight(this.getHeight()))
 			throw new IllegalArgumentException();
 		this.width = width;
 		this.height = height;
@@ -63,9 +62,9 @@ public class World {
 	 * @return false
 	 * 			The provided width is invalid
 	 */
-	public boolean canHaveAsWidth(double width) {
+	public static boolean isValidWidth(double width) {
 		if (!Double.isNaN(width))
-			if (this.lowerBoundX <= width && width <= this.upperBoundX)
+			if (lowerBoundX <= width && width <= upperBoundX)
 				return true;
 		return false;
 	}
@@ -78,9 +77,9 @@ public class World {
 	 * @return false
 	 * 			The provided height is invalid
 	 */
-	public boolean canHaveAsHeight(double height) {
+	public static boolean isValidHeight(double height) {
 		if (!Double.isNaN(height))
-			if (this.lowerBoundY <= height && height <= this.upperBoundY)
+			if (lowerBoundY <= height && height <= upperBoundY)
 				return true;
 		return false;
 	}
@@ -110,10 +109,17 @@ public class World {
 	 */
 	// TODO The (x,y)-coordinate has to be adjacent to impassable terrain.
 	public void addWormToWorld() {
-		this.collectionOfWorms.add(new Worm(this, Math.abs(new Random()
-				.nextInt()), Math.abs(new Random().nextInt()), Math
-				.abs(new Random().nextInt()), Math.abs(new Random().nextInt()),
-				"Default Name"));
+		double xWorm, yWorm, radiusWorm;
+		do {
+			xWorm = Math.abs(new Random().nextDouble());
+			yWorm = Math.abs(new Random().nextDouble());
+			radiusWorm = Math.abs(new Random().nextDouble());
+			if (this.isAdjacent(xWorm, yWorm, radiusWorm)) {
+				this.collectionOfWorms.add(new Worm(this, xWorm, yWorm, Math
+						.abs(new Random().nextDouble()), radiusWorm,
+						"Default Name"));
+			}
+		} while (!(this.isAdjacent(xWorm, yWorm, radiusWorm)));
 	}
 
 	/**
@@ -121,8 +127,15 @@ public class World {
 	 */
 	// TODO The (x,y)-coordinate has to be adjacent to impassable terrain.
 	public void addFoodToWorld() {
-		this.collectionOfFood.add(new Food(Math.abs(new Random().nextInt()),
-				Math.abs(new Random().nextInt())));
+		double xFood, yFood;
+		do {
+			xFood = Math.abs(new Random().nextDouble());
+			yFood = Math.abs(new Random().nextDouble());
+			if (this.isAdjacent(xFood, yFood, Food.radius)) {
+				this.collectionOfFood.add(new Food(xFood, yFood));
+			}
+		} while (!(this.isAdjacent(xFood, yFood, Food.radius)));
+
 	}
 
 	/**
@@ -179,7 +192,7 @@ public class World {
 				if (searchWinner.isAlive()
 						&& searchWinner.getTeamName() == null)
 					return searchWinner.getName();
-				if (searchWinner.isAlive()
+				else if (searchWinner.isAlive()
 						&& searchWinner.getTeamName() != null)
 					return searchWinner.getTeamName();
 			}
@@ -265,6 +278,7 @@ public class World {
 	 * @return false
 	 * 			There is no impassable terrain on the provided radius around the provided coordinates
 	 */
+	// TODO
 	public boolean isImpassable(double x, double y, double radius) {
 		return (!area[(int) (this.getHeight() - y)][(int) x]);
 	}
@@ -282,6 +296,8 @@ public class World {
 
 	/**
 	 * Function that starts a next turn.
+	 * Each new turn, the worm whose turn it is, is healed for 10 Hit Points and its 
+	 * Action Points are reset to the maximum amount of Action Points that worm can have.
 	 */
 	public void startNextTurn() {
 		this.currentWorm = ((ArrayList<Worm>) this.getWorms())
@@ -289,6 +305,8 @@ public class World {
 						.getCurrentWorm()) + 1) % getWorms().size());
 		this.getCurrentWorm().setHitPoints(
 				this.getCurrentWorm().getHitPoints() + 10);
+		this.getCurrentWorm().setActionPoints(
+				this.getCurrentWorm().getMaxActionPoints());
 	}
 
 	/**
@@ -357,8 +375,7 @@ public class World {
 	 * 			The object, whose properties were used, doesn't lie in this world
 	 */
 	public boolean liesInWorld(double x, double y, double radius) {
-		return ((x + radius <= this.getWidth())
-				&& (x - radius >= this.lowerBoundX) && (y + radius <= this
-				.getHeight() && (y - radius >= this.lowerBoundY)));
+		return ((x + radius <= this.getWidth()) && (x - radius >= lowerBoundX)
+				&& (y + radius <= this.getHeight()) && (y - radius >= lowerBoundY));
 	}
 }
