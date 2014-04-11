@@ -52,10 +52,10 @@ public class Worm {
 	private String name;
 	private static final double minimalRadius = .25;
 	private static final double lowerBoundMassExcluded = 0;
-	private static final double lowerBoundX = Double.NEGATIVE_INFINITY;
-	private static final double upperBoundX = Double.POSITIVE_INFINITY;
-	private static final double lowerBoundY = Double.NEGATIVE_INFINITY;
-	private static final double upperBoundY = Double.POSITIVE_INFINITY;
+	private static final double lowerBoundX = World.lowerBoundX;
+	private static final double upperBoundX = World.upperBoundX;
+	private static final double lowerBoundY = World.lowerBoundY;
+	private static final double upperBoundY = World.upperBoundY;
 	private int actionPoints, maxActionPoints;
 	private int hitPoints, maxHitPoints;
 	private ArrayList<Projectile> collectionOfWeapons;
@@ -122,8 +122,9 @@ public class Worm {
 	 * 			otherwise an exception has to be thrown.
 	 * 			| !isValidName(name)
 	 */
-	public Worm(World world, double x, double y, double direction, double radius, String name)
-			throws IllegalArgumentException, ArithmeticException {
+	public Worm(World world, double x, double y, double direction,
+			double radius, String name) throws IllegalArgumentException,
+			ArithmeticException {
 		if (!isValidX(x) || !isValidY(y) || !isValidRadius(radius)
 				|| !isValidName(name))
 			throw new IllegalArgumentException();
@@ -320,16 +321,15 @@ public class Worm {
 	 * 
 	 * @param newActionPoints
 	 * 			The new number of Action Points.
-	 * @pre	The new amount of Action Points has to be valid, i.e. it is an element of [0, this.getMaxActionPoints()[.
-	 * 		| 0 <= newActionPoints && newActionPoints <= this.getMaxActionPoints()
-	 * @post	The current amount of Action Points of this worm has to be equal to the given new amount of
-	 * 			Action Points.
-	 * 			| (new this).getActionPoints() == newActionPoints
+	 * @post	If the new amount of Action Points is valid, the current amount of Action Points of this worm has 
+	 * 			to be equal to the given new amount of Action Points.
+	 * 			| if (0 <= newActionPoints && newActionPoints <= this.getMaxActionPoints())
+	 * 			|	then
+	 * 			| 		(new this).getActionPoints() == newActionPoints
 	 * @post	If the new amount of Action Points is less than 0, this worm's Action Points have to be set to 0.
 	 * 			| if (newActionPoints < 0)
 	 * 			|	then ((new this).getActionPoints() == 0)
 	 */
-	// TODO Make the precondition a postcondition (total manner)
 	public void setActionPoints(int newActionPoints) {
 		if (0 <= newActionPoints
 				&& newActionPoints <= this.getMaxActionPoints())
@@ -814,12 +814,7 @@ public class Worm {
 	 * 			No weapon is selected
 	 */
 	public String getSelectedWeapon() {
-		if (this.projectile instanceof Rifle)
-			return "Rifle";
-		else if (this.projectile instanceof Bazooka)
-			return "Bazooka";
-		else
-			return null;
+		return projectile.getWeaponName();
 	}
 
 	/**
