@@ -26,7 +26,8 @@ public class Bazooka extends Projectile {
 	private final int hitPointsReduce = 80;
 	private final double mass = 0.3;
 	private double force = 0; // TODO
-	
+	private final String weaponName = "Bazooka";
+
 	/**
 	 * Constructor of the class Bazooka.
 	 * The constructor calls on the constructor of the superclass to be created.
@@ -37,7 +38,7 @@ public class Bazooka extends Projectile {
 	public Bazooka(Worm worm) {
 		super(worm);
 	}
-	
+
 	/**
 	 * Function which returns the cost of Action Points to shoot with the bazooka.
 	 * 
@@ -49,7 +50,7 @@ public class Bazooka extends Projectile {
 	public int getActionPointsCost() {
 		return this.actionPointsCost;
 	}
-	
+
 	/**
 	 * Function which returns the amount of Hit Points that have to be subtracted from the current amount of Hit Points of the worm that is hit by the rocket.
 	 * 
@@ -61,7 +62,7 @@ public class Bazooka extends Projectile {
 	public int getHitPointsReduction() {
 		return this.hitPointsReduce;
 	}
-	
+
 	/**
 	 * Function which returns the mass of the rocket from a bazooka.
 	 * 
@@ -73,7 +74,7 @@ public class Bazooka extends Projectile {
 	public double getMass() {
 		return this.mass;
 	}
-	
+
 	/**
 	 * Function which returns the initial force of the rocket from the bazooka, just before its launch.
 	 * 
@@ -84,5 +85,16 @@ public class Bazooka extends Projectile {
 	@Override
 	public double getForce() {
 		return this.force;
+	}
+
+	/**
+	 * Function that returns the name of this weapon.
+	 * 
+	 * @return this.weaponName
+	 * 			The name of this weapon
+	 */
+	@Override
+	public String getWeaponName() {
+		return this.weaponName;
 	}
 }
