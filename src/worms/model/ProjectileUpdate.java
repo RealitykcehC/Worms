@@ -27,12 +27,18 @@ public class Projectile {
 	 */
 	public final double density = 7800.0;
 	private double x, y, direction;
-	private int actionPointsCost = 0; // Default cost, the amount will be specified in the subclasses.
+	private int actionPointsCost = 0; // Default cost, the amount will be
+										// specified in the subclasses.
 	private Worm worm;
-	private double mass = 0; // Default mass, the mass will be specified in the subclasses.
-	private double force = 0; // Default force, the force will be specified in the subclasses.
-	private int hitPointsReduce = 0; // Default Hit Points that need to be reduced. It will be specified in the subclasses.
-	
+	private double mass = 0; // Default mass, the mass will be specified in the
+								// subclasses.
+	private double force = 0; // Default force, the force will be specified in
+								// the subclasses.
+	private int hitPointsReduce = 0; // Default Hit Points that need to be
+										// reduced. It will be specified in the
+										// subclasses.
+	private String weaponName = "Projectile";
+
 	/**
 	 * Constructor of the class Projectile.
 	 * 
@@ -53,16 +59,21 @@ public class Projectile {
 	 * 			| !Worm.isValidX(worm.getX() + (Math.cos(worm.getOrientation()) * worm.getRadius())) || 
 	 *			|	!Worm.isValidY(worm.getY() + (Math.sin(worm.getOrientation()) * worm.getRadius()))
 	 */
-	public Projectile(Worm worm) throws IllegalArgumentException{
+	public Projectile(Worm worm) throws IllegalArgumentException {
 		this.worm = worm;
-		if (!Worm.isValidX(worm.getX() + (Math.cos(worm.getOrientation()) * worm.getRadius())) || 
-				!Worm.isValidY(worm.getY() + (Math.sin(worm.getOrientation()) * worm.getRadius())))
+		if (!Worm.isValidX(this.getWorm().getX()
+				+ (Math.cos(this.getWorm().getOrientation()) * this.getWorm()
+						.getRadius()))
+				|| !Worm.isValidY(worm.getY()
+						+ (Math.sin(worm.getOrientation()) * worm.getRadius())))
 			throw new IllegalArgumentException();
-		this.x = worm.getX() + (Math.cos(worm.getOrientation()) * worm.getRadius());
-		this.y = worm.getY() + (Math.sin(worm.getOrientation()) * worm.getRadius());
+		this.x = worm.getX()
+				+ (Math.cos(worm.getOrientation()) * worm.getRadius());
+		this.y = worm.getY()
+				+ (Math.sin(worm.getOrientation()) * worm.getRadius());
 		this.direction = worm.recalculateAngle(worm.getOrientation());
 	}
-	
+
 	/**
 	 * Function which returns the x-coordinate of this projectile.
 	 * 
@@ -73,7 +84,7 @@ public class Projectile {
 	public double getX() {
 		return this.x;
 	}
-	
+
 	/**
 	 * Function which returns the y-coordinate of this projectile.
 	 * 
@@ -84,7 +95,7 @@ public class Projectile {
 	public double getY() {
 		return this.y;
 	}
-	
+
 	/**
 	 * Function which returns the current direction of this projectile.
 	 * 
@@ -95,7 +106,7 @@ public class Projectile {
 	public double getOrientation() {
 		return this.direction;
 	}
-	
+
 	/**
 	 * Function which returns the worm that has to shoot (i.e. the worm whose turn it currently is).
 	 * 
@@ -106,7 +117,7 @@ public class Projectile {
 	public Worm getWorm() {
 		return this.worm;
 	}
-	
+
 	/**
 	 * Function which returns the cost of Action Points to shoot with this projectile.
 	 * 
@@ -117,7 +128,7 @@ public class Projectile {
 	public int getActionPointsCost() {
 		return this.actionPointsCost;
 	}
-	
+
 	/**
 	 * Function which returns the amount of Hit Points that have to be subtracted from the current amount of Hit Points of the worm that is hit.
 	 * 
@@ -128,7 +139,7 @@ public class Projectile {
 	public int getHitPointsReduction() {
 		return this.hitPointsReduce;
 	}
-	
+
 	/**
 	 * Function which returns the mass of this projectile.
 	 * 
@@ -139,7 +150,7 @@ public class Projectile {
 	public double getMass() {
 		return this.mass;
 	}
-	
+
 	/**
 	 * Function which returns the initial force of this projectile, just before its launch.
 	 * 
@@ -167,7 +178,7 @@ public class Projectile {
 			throw new IllegalArgumentException();
 		this.x = newX;
 	}
-	
+
 	/**
 	 * Function which sets the y-coordinate of this projectile to the newly provided y-coordinate.
 	 * 
@@ -179,12 +190,12 @@ public class Projectile {
 	 * 			The new y-coordinate of this projectile has to be valid, otherwise an exception has to be thrown.
 	 * 			| !Worm.isValidY(newY)
 	 */
-	public void setY(double newY) throws IllegalArgumentException{
+	public void setY(double newY) throws IllegalArgumentException {
 		if (!Worm.isValidY(newY))
 			throw new IllegalArgumentException();
 		this.y = newY;
 	}
-	
+
 	/**
 	 * Function which fires this projectile.
 	 * The x-coordinate of this projectile is the starting x-coordinate added to the distance this projectile travels.
@@ -206,12 +217,13 @@ public class Projectile {
 		if (!Worm.isValidX(this.getX() + this.getJumpDistance()))
 			throw new ArithmeticException();
 		this.setX(this.getX() + this.getJumpDistance());
-		this.getWorm().setActionPoints(this.getWorm().getActionPoints() - this.getActionPointsCost());
+		this.getWorm().setActionPoints(
+				this.getWorm().getActionPoints() - this.getActionPointsCost());
 		this.fall();
 		if (this.getWorm().getActionPoints() == 0)
 			this.getWorm().terminate();
 	}
-	
+
 	/**
 	 * Function that returns the time this projectile will travel before falling down or exploding (given that it didn't hit an impassable position already).
 	 * @param timeStep 
@@ -221,9 +233,10 @@ public class Projectile {
 	 */
 	// TODO
 	public double getJumpTime(double timeStep) {
-		return this.getJumpDistance() / (this.getInitialVelocity() * Math.cos(this.getOrientation()));
+		return this.getJumpDistance()
+				/ (this.getInitialVelocity() * Math.cos(this.getOrientation()));
 	}
-	
+
 	/**
 	 * Function which returns an array which holds the (x,y)-coordinates of this projectile after being shot at time t.
 	 * 
@@ -232,14 +245,19 @@ public class Projectile {
 	 * @return result
 	 * 			An array which holds the (x,y)-coordinates of this projectile after being shot at time t
 	 */
-	public double [] getJumpStep(double t) {
-		double initVelocityX = this.getInitialVelocity() * Math.cos(this.getOrientation());
-		double initVelocityY = this.getInitialVelocity() * Math.sin(this.getOrientation());
+	public double[] getJumpStep(double t) {
+		double initVelocityX = this.getInitialVelocity()
+				* Math.cos(this.getOrientation());
+		double initVelocityY = this.getInitialVelocity()
+				* Math.sin(this.getOrientation());
 		double Xt = this.getX() + (initVelocityX * t);
-		double Yt = this.getY() + ((initVelocityY * t) - (.5 * this.getWorm().g * Math.pow(t, 2)));
-		double [] result = {Xt,Yt};
+		double Yt = this.getY()
+				+ ((initVelocityY * t) - (.5 * this.getWorm().g * Math
+						.pow(t, 2)));
+		double[] result = { Xt, Yt };
 		return result;
 	}
+
 	/**
 	 * Function which calculates the distance of the jump (i.e. the shot). This is the distance that this projectile will travel before falling.
 	 * 
@@ -247,9 +265,10 @@ public class Projectile {
 	 * 			The distance this projectile travels after it has been shot
 	 */
 	public double getJumpDistance() {
-		return (Math.pow(this.getInitialVelocity(), 2) * Math.sin(2 * this.getOrientation())) / this.getWorm().g;
+		return (Math.pow(this.getInitialVelocity(), 2) * Math.sin(2 * this
+				.getOrientation())) / this.getWorm().g;
 	}
-	
+
 	/**
 	 * Function which returns the initial velocity at launch of this projectile.
 	 * 
@@ -257,16 +276,16 @@ public class Projectile {
 	 * 			The initial velocity at launch of this projectile
 	 */
 	public double getInitialVelocity() {
-		 return (this.getForce() / this.getMass()) * .5;
+		return (this.getForce() / this.getMass()) * .5;
 	}
-	
+
 	/**
 	 * Function that makes this projectile fall, until it either hits another worm of it hits an impassable object.
 	 */
 	public void fall() {
 		// TODO Implement this function.
 	}
-	
+
 	/**
 	 * Function that handles the events that need to be handled when a worm is hit.
 	 * 
@@ -279,17 +298,20 @@ public class Projectile {
 	 * 			|	then (hitWorm.terminate())
 	 */
 	public void hit(Worm hitWorm) {
-		hitWorm.setHitPoints(hitWorm.getHitPoints() - this.getHitPointsReduction());
+		hitWorm.setHitPoints(hitWorm.getHitPoints()
+				- this.getHitPointsReduction());
 		if (!hitWorm.isAlive())
 			hitWorm.terminate();
 	}
-// 3² = x <=> 2 = ³log(x)
+
+	// 3² = x <=> 2 = ³log(x)
 	// r³ = x => r = ?
 	// r = \³|x
 	// TODO Derdemachtswortel!!!!!!!
 	public double getRadius() {
 		double volume = mass / density;
-		return (volume * 3) / (4 * Math.PI); // Hiervan derdemachtswortel teruggeven!!!
+		return (volume * 3) / (4 * Math.PI); // Hiervan derdemachtswortel
+												// teruggeven!!!
 	}
 
 	/**
@@ -304,7 +326,7 @@ public class Projectile {
 	public boolean isActive() {
 		return (this != null);
 	}
-	
+
 	/**
 	 * Function that terminates this projectile.
 	 * 
@@ -314,5 +336,16 @@ public class Projectile {
 	public Projectile terminate() {
 		this.worm = null;
 		return null;
+	}
+
+	/**
+	 * Function that returns the name of this weapon.
+	 * 
+	 * @return this.weaponName
+	 * 			The name of this weapon
+	 */
+	public String getWeaponName() {
+		return this.weaponName;
+		// return null; ???
 	}
 }
