@@ -104,6 +104,84 @@ public class World {
 	 * @param y
 	 * 			The y-coordinate where the food has to be placed
 	 */
+	 /**
+	 * Checks whether the given circular region of the given world,
+	 * defined by the given center coordinates and radius,
+	 * is impassable. 
+	 * 
+	 * @param world The world in which to check impassability 
+	 * @param x The x-coordinate of the center of the circle to check  
+	 * @param y The y-coordinate of the center of the circle to check
+	 * @param radius The radius of the circle to check
+	 * 
+	 * @invar counter gives how many times the given terrain is impassable at the
+	 * interval of the circle and middlepoint
+	 * 
+	 * @return True if the given region is impassable, false otherwise.
+	 */
+	public boolean isImpassable(double x, double y, double radius){
+
+		double poolX;
+		double poolY;
+		String [] passable = new String [360];
+		int counter = 0;
+
+		for (int i=0; i<360; i++){
+			poolX = (double)(radius * Math.cos(i));
+			poolY = (double)(radius * Math.sin(i));
+                // the middlepoint of a circle is x+radius and y+radius
+			if (passableMap[ x + radius + poolX][y + radius + poolY]== true && passableMap[x + radius][y + radius]== true && passableMap [x + radius + poolX * 1.1][y + radius + poolY * 1.1] == false ){
+				}
+			else {
+				counter++;
+			}
+		}
+		
+		if (counter != 0){
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	/**
+	 * isAdjacent() gives back true if the given circle is passable terrain and is adjacent to impassable terrain at a 0.1 times the radius length
+	 * 
+	 * @param world The world in which to check adjacenty
+	 * @param x The x-coordinate of the center of the circle to check  
+	 * @param y The y-coordinate of the center of the circle to check
+	 * @param radius The radius of the circle to check
+	 * 
+	 * @invar counter gives how many times the given terrain is impassable at the
+	 * interval of the circle and middlepoint
+	 * 
+	 * @return True if the given region is passable and nearby impassable terrain, false otherwise.
+	 */
+	public boolean isAdjacent(double x, double y, double radius){
+
+		double poolX;
+		double poolY;
+		String [] passable = new String [360];
+		int counter = 0;
+
+		for (int i=0; i<360; i++){
+			poolX = (double)(radius * Math.cos(i));
+			poolY = (double)(radius * Math.sin(i));
+		// the middlepoint of a circle is x+radius and y+radius
+			if (passableMap[ x + radius + poolX][ y + radius + poolY]== true && passableMap[x][y]== true && passableMap [x + radius + poolX * 1.1 ][ y + radius + poolY * 1.1 ] == false ){
+				}
+			else {
+				counter++;
+			}
+		}
+		
+		if (counter == 0){
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
 	public void addFoodToWorld(double x, double y) {
 		
 	}
