@@ -95,27 +95,15 @@ public class World {
 	public void addWormToWorld() {
 		
 	}
-	
-	/**
-	 * Function that adds food to the world at the provided (x,y)-coordinates.
-	 * 
-	 * @param x
-	 * 			The x-coordinate where the food has to be placed
-	 * @param y
-	 * 			The y-coordinate where the food has to be placed
-	 */
 	 /**
-	 * Checks whether the given circular region of the given world,
-	 * defined by the given center coordinates and radius,
-	 * is impassable. 
+	 * isImpassable gives back true if the terrain of the given circle is impassable
 	 * 
-	 * @param world The world in which to check impassability 
 	 * @param x The x-coordinate of the center of the circle to check  
 	 * @param y The y-coordinate of the center of the circle to check
 	 * @param radius The radius of the circle to check
 	 * 
 	 * @invar counter gives how many times the given terrain is impassable at the
-	 * interval of the circle and middlepoint
+	 * edge of the radius and middlepoint
 	 * 
 	 * @return True if the given region is impassable, false otherwise.
 	 */
@@ -147,13 +135,13 @@ public class World {
 	/**
 	 * isAdjacent() gives back true if the given circle is passable terrain and is adjacent to impassable terrain at a 0.1 times the radius length
 	 * 
-	 * @param world The world in which to check adjacenty
+	 * 
 	 * @param x The x-coordinate of the center of the circle to check  
 	 * @param y The y-coordinate of the center of the circle to check
 	 * @param radius The radius of the circle to check
 	 * 
-	 * @invar counter gives how many times the given terrain is impassable at the
-	 * interval of the circle and middlepoint
+	 * @invar counter gives back how many times the given terrain is impassable at the
+	 * edge of the radius and middlepoint
 	 * 
 	 * @return True if the given region is passable and nearby impassable terrain, false otherwise.
 	 */
@@ -182,6 +170,15 @@ public class World {
 			return false;
 		}
 	}
+	
+	/**
+	 * Function that adds food to the world at the provided (x,y)-coordinates.
+	 * 
+	 * @param x
+	 * 			The x-coordinate where the food has to be placed
+	 * @param y
+	 * 			The y-coordinate where the food has to be placed
+	 */
 	public void addFoodToWorld(double x, double y) {
 		
 	}
