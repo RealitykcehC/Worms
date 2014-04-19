@@ -225,8 +225,7 @@ public class World {
 	 * 			The object is not adjacent to impassable terrain
 	 */
 	public boolean isAdjacent(double x, double y, double radius) {
-
-		if (downAdjacent(x,y,radius) && upAdjacent(x,y,radius) ){
+		if (downAdjacent(x,y,radius) || upAdjacent(x,y,radius) ){
 			return true ;	
 		}else{
 			return false;
@@ -243,28 +242,16 @@ public class World {
 	 * @return true if the circle is adjacent false if not
 	 */
 	public boolean downAdjacent(double x, double y, double radius){
-		double poolX;
-		double poolY;
-		int counter = 0;
+		double poleX;
+		double poleY;
 
-		for (int i=180; i<=360; i++){
-			poolX = (double)(radius * Math.cos(Math.toRadians(i)));
-			poolY = (double)(radius * Math.sin(Math.toRadians(i)));
-
-			if (area[ (int)(x + poolX)][ (int)(y -poolY)]== true && area[(int) (x )][(int)(y ]== true && area[(int) (x+ poolX * 1.01) ][ (int) (y - poolY * 1.01) ] == false ){
-			}
-			else {
-				counter++;
-			}
+		for (int i = 180; i < 360; i++){
+			poleX = (double)(radius * Math.cos(Math.toRadians(i)));
+			poleY = (double)(radius * Math.sin(Math.toRadians(i)));
+			if (!(area[(int)(x + poleX)][ (int)(y - poleY)] && area[(int) x][(int) y] && !(area[(int) (x + poleX * 1.01)][(int) (y - poleY * 1.01)])))
+				return false;
 		}
-
-		if (counter == 0){
-			return true;
-		}
-		else {
-			return false;
-		}
-
+		return true;
 	}
 	/**
 	 * Function gives back wether the upside of an circle is adjacent
@@ -277,28 +264,16 @@ public class World {
 	 * @return 			true if the circle is above adjacent
 	 */
 	public boolean upAdjacent(double x, double y, double radius){
-		double poolX;
-		double poolY;
-		int counter = 0;
+		double poleX;
+		double poleY;
 
-		for (int i=0; i<=180; i++){
-			poolX = (double)(radius * Math.cos(Math.toRadians(i)));
-			poolY = (double)(radius * Math.sin(Math.toRadians(i)));
-
-			if (area[ (int)(x + poolX)][ (int)(y -poolY)]== true && area[(int) (x )][(int)(y ]== true && area[(int) (x+ poolX * 1.01) ][ (int) (y - poolY * 1.01) ] == false ){
-				}
-			else {
-				counter++;
-			}
+		for (int i = 0; i < 180; i++){
+			poleX = (double)(radius * Math.cos(Math.toRadians(i)));
+			poleY = (double)(radius * Math.sin(Math.toRadians(i)));
+			if (!(area[(int)(x + poleX)][(int)(y - poleY)] && area[(int) x][(int) y] && !(area[(int) (x + poleX * 1.01)][(int) (y - poleY * 1.01)]))){
+				return false;
 		}
-
-		if (counter == 0){
-			return true;
-		}
-		else {
-			return false;
-		}
-
+		return true;
 	}
 
 	/**
@@ -321,27 +296,16 @@ public class World {
 	 */
 	
 	public boolean isImpassable(double x, double y, double radius) {
-		
-		double poolX;
-		double poolY;
-		int counter = 0;
+		double poleX;
+		double poleY;
 	
-		for (int i=0; i<360; i++){
-			poolX = (double)(radius * Math.cos(i));
-			poolY = (double)(radius * Math.sin(i));
-			if (area[ (int)(x + poolX)][ (int)(y -poolY)]== true])
-				}
-			else {
-				counter++;
-			}
+		for (int i = 0; i < 360; i++){
+			poleX = (double)(radius * Math.cos(i));
+			poleY = (double)(radius * Math.sin(i));
+			if (!(area[(int)(x + poleX)][(int)(y - poleY)]))
+				return true;
 		}
-	
-		if (counter != 0){
-			return true;
-		}
-		else {
-			return false;
-		}
+		return false;
 	}
 
 	/**
