@@ -251,7 +251,7 @@ public class World {
 			poolX = (double)(radius * Math.cos(Math.toRadians(i)));
 			poolY = (double)(radius * Math.sin(Math.toRadians(i)));
 
-			if (area[ (int)(x + poolX)][ (int)(y +poolY)]== true && area[(int) (x )][(int)(y ]== true && area[(int) (x+ poolX * 1.01) ][ (int) (y + poolY * 1.01) ] == false ){
+			if (area[ (int)(x + poolX)][ (int)(y -poolY)]== true && area[(int) (x )][(int)(y ]== true && area[(int) (x+ poolX * 1.01) ][ (int) (y - poolY * 1.01) ] == false ){
 			}
 			else {
 				counter++;
@@ -285,7 +285,7 @@ public class World {
 			poolX = (double)(radius * Math.cos(Math.toRadians(i)));
 			poolY = (double)(radius * Math.sin(Math.toRadians(i)));
 
-			if (area[ (int)(x + poolX)][ (int)(y +poolY)]== true && area[(int) (x )][(int)(y ]== true && area[(int) (x+ poolX * 1.01) ][ (int) (y + poolY * 1.01) ] == false ){
+			if (area[ (int)(x + poolX)][ (int)(y -poolY)]== true && area[(int) (x )][(int)(y ]== true && area[(int) (x+ poolX * 1.01) ][ (int) (y - poolY * 1.01) ] == false ){
 				}
 			else {
 				counter++;
@@ -329,7 +329,7 @@ public class World {
 		for (int i=0; i<360; i++){
 			poolX = (double)(radius * Math.cos(i));
 			poolY = (double)(radius * Math.sin(i));
-			if (area[ (int)(x + poolX)][ (int)(y +poolY)]== true])
+			if (area[ (int)(x + poolX)][ (int)(y -poolY)]== true])
 				}
 			else {
 				counter++;
