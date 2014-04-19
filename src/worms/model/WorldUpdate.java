@@ -210,9 +210,12 @@ public class World {
 		return this.collectionOfWorms;
 	}
 
-/**
-	 * Function  isAdjacent() gives true if the given circle is passable terrain && is adjacent to impassable terrain at a 1.01 times the radius length
-
+	/**
+	 * Function that checks whether or not the object with provided (x,y)-coordinates and radius is adjacent to
+	 * impassable terrain or not.
+	 * An object is adjacent to impassable terrain when the circle describing the object is on impassable terrain 
+	 * with 1.01 times the radius of the object.
+	 *
 	 * @param x
 	 * 			The x-coordinate of the object (worm, food etc.)
 	 * @param y
@@ -225,26 +228,27 @@ public class World {
 	 * 			The object is not adjacent to impassable terrain
 	 */
 	public boolean isAdjacent(double x, double y, double radius) {
-		if (downAdjacent(x,y,radius) || upAdjacent(x,y,radius) ){
-			return true ;	
-		}else{
-			return false;
-		}
+		return (downAdjacent(x,y,radius) || upAdjacent(x,y,radius));
 	}
+	
 	/**
-	 * Function that checks wether the downside of the circle is adjacent
-	 * we check the xycoordinate point
-	 * from there we use the radius to check the perimeter of the circle if it's adjacent or not
+	 * Function that checks whether or not the downside of the circle describing the object is adjacent to 
+	 * impassable terrain.
 	 * 
-	 * @param x		the x coordinate of the middlepoint of the circle
-	 * @param y		the y coordinate of the middlepoint of the circle
-	 * @param radius	the radius of the circle to check
-	 * @return true if the circle is adjacent false if not
+	 * @param x
+	 * 		The x-coordinate of the object that needs to be checked
+	 * @param y
+	 * 		The y-coordinate of the object that needs to be checked
+	 * @param radius
+	 * 		The radius of the object that needs to be checked
+	 * @return true
+	 * 		The object's lower half is adjacent to impassable terrain
+	 * @return false
+	 * 		The object's lower half isn't adjacent to impassable terrain
 	 */
 	public boolean downAdjacent(double x, double y, double radius){
 		double poleX;
 		double poleY;
-
 		for (int i = 180; i < 360; i++){
 			poleX = (double)(radius * Math.cos(Math.toRadians(i)));
 			poleY = (double)(radius * Math.sin(Math.toRadians(i)));
@@ -253,20 +257,25 @@ public class World {
 		}
 		return true;
 	}
+	
 	/**
-	 * Function gives back wether the upside of an circle is adjacent
-	 * we check the xycoordinate point 
-	 * from there we use the radius to check the perimeter of the circle if it's adjacent or not
+	 * Function that checks whether or not the upper half of the circle describing the object is adjacent to 
+	 * impassable terrain.
 	 * 
-	 * @param x 		the xcoordinate of the middlepoint of the circle
-	 * @param y			the ycoordinate of the middlepoint of the circle
-	 * @param radius	the radius of the given circle
-	 * @return 			true if the circle is above adjacent
+	 * @param x
+	 * 		The x-coordinate of the object that needs to be checked
+	 * @param y
+	 * 		The y-coordinate of the object that needs to be checked
+	 * @param radius
+	 * 		The radius of the object that needs to be checked
+	 * @return true
+	 * 		The object's upper half is adjacent to impassable terrain
+	 * @return false
+	 * 		The object's upper half isn't adjacent to impassable terrain
 	 */
 	public boolean upAdjacent(double x, double y, double radius){
 		double poleX;
 		double poleY;
-
 		for (int i = 0; i < 180; i++){
 			poleX = (double)(radius * Math.cos(Math.toRadians(i)));
 			poleY = (double)(radius * Math.sin(Math.toRadians(i)));
@@ -277,7 +286,7 @@ public class World {
 	}
 
 	/**
-	 * Function that checks whether or not there is impassable terrain on the circle described by the 
+	 * Function that checks whether or not there is impassable terrain on the circle, described by the 
 	 * provided coordinates and the provided radius.
 	 * 
 	 * @param x
@@ -286,9 +295,6 @@ public class World {
 	 * 			The y-coordinate of the middle point
 	 * @param radius
 	 * 			The radius of the circle
-	 * @invar counter gives how many times the given terrain is impassable at the
-	 * 			edge of the radius and middlepoint
-	 * 
 	 * @return true
 	 * 			There is impassable terrain on the provided radius around the provided coordinates
 	 * @return false
@@ -298,7 +304,6 @@ public class World {
 	public boolean isImpassable(double x, double y, double radius) {
 		double poleX;
 		double poleY;
-	
 		for (int i = 0; i < 360; i++){
 			poleX = (double)(radius * Math.cos(i));
 			poleY = (double)(radius * Math.sin(i));
