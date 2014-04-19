@@ -836,14 +836,32 @@ public class Worm {
 				% this.collectionOfWeapons.size());
 	}
 
+	private static boolean canShoot(){
+		
+		if (this.getActionPoints() >= this.projectile().getActionPoints()&& !this.isImpassable)
+			
+	}
 	/**
 	 * Method that makes this worm shoot.
 	 * 
 	 * @param yield
 	 * 			The yield with which this worm fires the weapon.
 	 */
-	public void shoot(int yield) {
-		// TODO Auto-generated method stub
+	public void shoot(int yield) throws IllegalAmountException {
+		if (!isValidYield)
+			throw new IllegalAmountException("Yield is an invalid amount");
+		
+		
+		
+	}
+	/**
+	 * Method checks if yield is a valid argument
+	 * 
+	 * @param yield		
+	 */
+	public static boolean isValidYield (int yield){
+		
+		return 0 <= yield && yield <= 100;
 	}
 
 	/**
