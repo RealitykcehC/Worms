@@ -7,8 +7,8 @@ import java.util.Random;
 /**
  * A class that implements all the aspects of the game world.
  * 
- * @author Pieter Jan Vingerhoets & Matthijs Nelissen
- * @version 0.1a
+ * @author Pieter Jan Vingerhoets & Mathijs Nelissen
+ * @version 0.1b
  */
 public class World {
 	/**
@@ -210,9 +210,9 @@ public class World {
 		return this.collectionOfWorms;
 	}
 
-	/**
-	 * Function that checks whether or not something is adjacent to impassable terrain.
-	 * 
+/**
+	 * Function  isAdjacent() gives true if the given circle is passable terrain && is adjacent to impassable terrain at a 1.01 times the radius length
+
 	 * @param x
 	 * 			The x-coordinate of the object (worm, food etc.)
 	 * @param y
@@ -225,8 +225,123 @@ public class World {
 	 * 			The object is not adjacent to impassable terrain
 	 */
 	public boolean isAdjacent(double x, double y, double radius) {
-		// TODO Auto-generated method stub
-		return false;
+
+		if (downAdjacent(x,y,radius) && upAdjacent(x,y,radius) ){
+			return true ;	
+		}else{
+			return false;
+		}
+	}
+	/**
+	 * Function that checks wether the downside of the circle is adjacent
+	 * we check the xycoordinate point
+	 * from there we use the radius to check the perimeter of the circle if it's adjacent or not
+	 * 
+	 * @param x		the x coordinate of the middlepoint of the circle
+	 * @param y		the y coordinate of the middlepoint of the circle
+	 * @param radius	the radius of the circle to check
+	 * @return true if the circle is adjacent false if not
+	 */
+	public boolean downAdjacent(double x, double y, double radius){
+		double poolX;
+		double poolY;
+		int counter = 0;
+
+		for (int i=180; i<=360; i++){
+			poolX = (double)(radius * Math.cos(Math.toRadians(i)));
+			poolY = (double)(radius * Math.sin(Math.toRadians(i)));
+
+			if (area[ (int)(x - radius + poolX)][ (int)(y - radius +poolY)]== true && area[(int) (x - radius)][(int)(y - radius)]== true && area[(int) (x - radius + poolX * 1.01) ][ (int) (y - radius + poolY * 1.01) ] == false ){
+			}
+			else {
+				counter++;
+			}
+		}
+
+		if (counter == 0){
+			return true;
+		}
+		else {
+			return false;
+		}
+
+	}
+	/**
+	 * Function gives back wether the upside of an circle is adjacent
+	 * we check the xycoordinate point 
+	 * from there we use the radius to check the perimeter of the circle if it's adjacent or not
+	 * 
+	 * @param x 		the xcoordinate of the middlepoint of the circle
+	 * @param y			the ycoordinate of the middlepoint of the circle
+	 * @param radius	the radius of the given circle
+	 * @return 			true if the circle is above adjacent
+	 */
+	public boolean upAdjacent(double x, double y, double radius){
+		double poolX;
+		double poolY;
+		int counter = 0;
+
+		for (int i=0; i<=180; i++){
+			poolX = (double)(radius * Math.cos(Math.toRadians(i)));
+			poolY = (double)(radius * Math.sin(Math.toRadians(i)));
+
+			if (area[ (int)(x - radius + poolX)][ (int)(y - radius +poolY)]== true && area[(int) (x - radius)][(int)(y - radius)]== true && area[(int) (x - radius + poolX * 1.01) ][ (int) (y - radius + poolY * 1.01) ] == false ){
+				}
+			else {
+				counter++;
+			}
+		}
+
+		if (counter == 0){
+			return true;
+		}
+		else {
+			return false;
+		}
+
+	}
+
+	/**
+	 * Function that checks whether or not there is impassable terrain on the circle described by the 
+	 * provided coordinates and the provided radius.
+	 * 
+	 * @param x
+	 * 			The x-coordinate of the middle point
+	 * @param y
+	 * 			The y-coordinate of the middle point
+	 * @param radius
+	 * 			The radius of the circle
+	 * @invar counter gives how many times the given terrain is impassable at the
+	 * 			edge of the radius and middlepoint
+	 * 
+	 * @return true
+	 * 			There is impassable terrain on the provided radius around the provided coordinates
+	 * @return false
+	 * 			There is no impassable terrain on the provided radius around the provided coordinates
+	 */
+	
+	public boolean isImpassable(double x, double y, double radius) {
+		
+		double poolX;
+		double poolY;
+		int counter = 0;
+	
+		for (int i=0; i<360; i++){
+			poolX = (double)(radius * Math.cos(i));
+			poolY = (double)(radius * Math.sin(i));
+			if (area[ (int)(x - radius + poolX)][ (int)(y - radius +poolY)]== true && area[(int) (x - radius)][(int)(y - radius)]== true)
+				}
+			else {
+				counter++;
+			}
+		}
+	
+		if (counter != 0){
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
 
 	/**
@@ -263,25 +378,7 @@ public class World {
 		return finishedVerification;
 	}
 
-	/**
-	 * Function that checks whether or not there is impassable terrain on the circle described by the 
-	 * provided coordinates and the provided radius.
-	 * 
-	 * @param x
-	 * 			The x-coordinate of the middle point
-	 * @param y
-	 * 			The y-coordinate of the middle point
-	 * @param radius
-	 * 			The radius of the circle
-	 * @return true
-	 * 			There is impassable terrain on the provided radius around the provided coordinates
-	 * @return false
-	 * 			There is no impassable terrain on the provided radius around the provided coordinates
-	 */
-	// TODO
-	public boolean isImpassable(double x, double y, double radius) {
-		return (!area[(int) (this.getHeight() - y)][(int) x]);
-	}
+	
 
 	/**
 	 * Function that starts the game.
