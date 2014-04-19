@@ -303,6 +303,29 @@ public class Projectile {
 		if (!hitWorm.isAlive())
 			hitWorm.terminate();
 	}
+	/**
+	 * Boolean that tells if the projectile hits a worm 
+	 * 
+	 * @param other		check one by one worms in the wormcollection 
+	 * @return	true if the given projectile hits a worm in his direction of jump.
+	 * 			false otherwise
+	 */
+	public boolean CheckForCollision(Worm other){
+
+		double poleX;
+		double poleY;
+		double poleOtherX;
+		double poleOtherY
+
+		for (int i = 0; i < 360; i++){
+			poleX = (double)(this.getRadius() * Math.cos(Math.toRadians(i)));
+			poleY = (double)(this.getRadius()* Math.sin(Math.toRadians(i)));
+			poleOtherX = (double)(other.getRadius() * Math.cos(Math.toRadians(i)));
+			poleOtherY = (double)(other.getRadius()* Math.sin(Math.toRadians(i)));
+			if (this.getX() + poleX - other.getX() - poleOtherX <= Math.EPSILON && this.getY() + poleY - other.getY() - poleOtherY<= Math.EPSILON)
+				return true;
+			return false;
+		}
 
 	// 3² = x <=> 2 = ³log(x)
 	// r³ = x => r = ?
