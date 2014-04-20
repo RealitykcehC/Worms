@@ -7,8 +7,8 @@ import java.util.Random;
 /**
  * A class that implements all the aspects of the game world.
  * 
- * @author Pieter Jan Vingerhoets & Mathijs Nelissen
- * @version 0.1b
+ * @author Pieter Jan Vingerhoets & Matthijs Nelissen
+ * @version 0.1a
  */
 public class World {
 	/**
@@ -25,6 +25,7 @@ public class World {
 	private Worm currentWorm;
 	private Projectile activeProjectile;
 	private boolean[][] area;
+	private Random randomSeed;
 
 	/**
 	 * Constructor of the class World.
@@ -52,6 +53,7 @@ public class World {
 		this.width = width;
 		this.height = height;
 		this.area = passableMap;
+		this.randomSeed = random;
 	}
 
 	/**
@@ -111,9 +113,9 @@ public class World {
 	public void addWormToWorld() {
 		double xWorm, yWorm, radiusWorm;
 		do {
-			xWorm = Math.abs(new Random().nextDouble());
-			yWorm = Math.abs(new Random().nextDouble());
-			radiusWorm = Math.abs(new Random().nextDouble());
+			xWorm = Math.abs(this.randomSeed.nextDouble());
+			yWorm = Math.abs(this.randomSeed.nextDouble());
+			radiusWorm = Math.abs(this.randomSeed.nextDouble());
 			if (this.isAdjacent(xWorm, yWorm, radiusWorm)) {
 				this.collectionOfWorms.add(new Worm(this, xWorm, yWorm, Math
 						.abs(new Random().nextDouble()), radiusWorm,
@@ -129,8 +131,8 @@ public class World {
 	public void addFoodToWorld() {
 		double xFood, yFood;
 		do {
-			xFood = Math.abs(new Random().nextDouble());
-			yFood = Math.abs(new Random().nextDouble());
+			xFood = Math.abs(this.randomSeed.nextDouble());
+			yFood = Math.abs(this.randomSeed.nextDouble());
 			if (this.isAdjacent(xFood, yFood, Food.radius)) {
 				this.collectionOfFood.add(new Food(xFood, yFood));
 			}
@@ -230,7 +232,7 @@ public class World {
 	public boolean isAdjacent(double x, double y, double radius) {
 		return (downAdjacent(x,y,radius) || upAdjacent(x,y,radius));
 	}
-	
+
 	/**
 	 * Function that checks whether or not the downside of the circle describing the object is adjacent to 
 	 * impassable terrain.
@@ -252,12 +254,12 @@ public class World {
 		for (int i = 180; i < 360; i++){
 			poleX = (double)(radius * Math.cos(Math.toRadians(i)));
 			poleY = (double)(radius * Math.sin(Math.toRadians(i)));
-			if (!(area[(int)(x + poleX)][ (int)(y - poleY)] && area[(int) x][(int) y] && !(area[(int) (x + poleX * 1.01)][(int) (y - poleY * 1.01)])))
+			if (!(area[(int)(x + poleX)][ (int)(y - poleY)] && area[(int) x][(int) y] && !(area[(int) (x + poleX * .1)][(int) (y - poleY * .1)])))
 				return false;
 		}
 		return true;
 	}
-	
+
 	/**
 	 * Function that checks whether or not the upper half of the circle describing the object is adjacent to 
 	 * impassable terrain.
@@ -276,10 +278,12 @@ public class World {
 	public boolean upAdjacent(double x, double y, double radius){
 		double poleX;
 		double poleY;
+		if (area[(int) x][(int) y])
+			return false;
 		for (int i = 0; i < 180; i++){
 			poleX = (double)(radius * Math.cos(Math.toRadians(i)));
 			poleY = (double)(radius * Math.sin(Math.toRadians(i)));
-			if (!(area[(int)(x + poleX)][(int)(y - poleY)] && area[(int) x][(int) y] && !(area[(int) (x + poleX * 1.01)][(int) (y - poleY * 1.01)]))){
+			if (!(area[(int)(x + poleX)][(int)(y - poleY)] && !(area[(int) (x + poleX * .1)][(int) (y - poleY * .1)])))
 				return false;
 		}
 		return true;
@@ -300,7 +304,7 @@ public class World {
 	 * @return false
 	 * 			There is no impassable terrain on the provided radius around the provided coordinates
 	 */
-	
+
 	public boolean isImpassable(double x, double y, double radius) {
 		double poleX;
 		double poleY;
@@ -346,8 +350,6 @@ public class World {
 		}
 		return finishedVerification;
 	}
-
-	
 
 	/**
 	 * Function that starts the game.
