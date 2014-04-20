@@ -863,28 +863,35 @@ public class Worm {
 	 * @param yield
 	 * 			The yield with which this worm fires the weapon.
 	 * 
-	 * @effect If the given orientation is adjacent to impassable terrain
-	 * 			the worm can not move
 	 * @effect The projectile will jump till it hits a worm 
 	 * 			||impassable terrain || out of the world boundaries
-	 * @effect actionpoints are reduced by the cost of shooting
 	 * 
-	 * @throw illegalamountexception 
+	 * @effect actionpoints are reduced by the cost of shooting if actionpoints are sufficient
+	 * 
+	 * @throw IllegalAmountException
 	 * 		if yield is not in his boundary 0 to 100 => throw new illegalamountexception
 	 */
 	public void shoot(int yield) throws IllegalAmountException{
-		if (!isValidYield){
+		if (!isValidYield(yield)){
 			throw new IllegalAmountException("invalid yield");
 		}
-		if (isValidYield){
-			this.projectile.jump();
+		if (isValidYield(yield)){
+			if (this.projectile.getWeaponName().equals("rifle")){
+				
+				
+			}
+			
+			
+			
+			
 			this.setActionPoints(this.getActionPoints()-this.projectile.getActionPointsCost());
 			
 		}	
 	/**
 	 * Method checks if yield is a valid argument
+	 * yield has to be between zero and a hundred
 	 * 
-	 * @param yield		
+	 * @param yield	The yield with which this worm fires the weapon.	
 	 */
 	public static boolean isValidYield (int yield){
 		
