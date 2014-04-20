@@ -40,7 +40,7 @@ import be.kuleuven.cs.som.annotate.Basic;
  * @invar	Only one weapon can be deployed each time, a worm cannot use multiple weapons at once.
  * 			| this.canHaveAsWeaponUsage()
  * @author Pieter Jan Vingerhoets & Mathijs Nelissen
- * @version 1.0
+ * @version 1.1
  */
 public class Worm {
 	/**
@@ -488,8 +488,7 @@ public class Worm {
 	 * All action points are being consumed when a jump is executed.
 	 * This worm cannot be facing downwards when jumping.
 	 * 
-	 * @param timeStep 
-	 * 			...
+	 * 		
 	 * @post	All the worm's action points are being used to jump.
 	 * 			| (new this).getActionPoints() == 0
 	 * @post	The location of the worm is updated, if it is possible.
@@ -501,25 +500,32 @@ public class Worm {
 	 * 			The worm has to be able to make the jump, i.e. the new x-coordinate has to be valid.
 	 * 			| !isValid(this.getX() + getJumpDistance())
 	 */
-	public void jump(double timeStep) throws ArithmeticException {
-		if (!canJump())
-			throw new ArithmeticException();
-		if (!isValidX(this.x + getJumpDistance()))
-			throw new ArithmeticException();
-		this.x += getJumpDistance();
-		this.actionPoints = 0;
-	}
+	public void jump() throws ArithmeticException{
+		if (!canJump()){
+			throw new ArithmeticException("Out of bounds");
+			return;
+		}
+		while(canJump()){
+			double xt = this.getJumpStep(this.getJumpTime())[0];
+			double yt = this.getJumpStep(this.getJumpTime())[1];
+			if (isValidXt(xt) && isValidYt(yt)){
+				this.x = xt;
+				this.y = yt;
+			}
+			if (!isValidXt(xt) || isValidYt(yt)){
+				throw new ArithmeticException("invalid coordinates");
+				return;
+			}
+		}
 
 	/**
 	 * Function that calculates the air-time of this worm when he jumps.
 	 * 
-	 * @param timeStep 
-	 * 			...
 	 * @return this.getJumpDistance() / (this.getInitialVelocity() * Math.cos(this.getOrientation()))
 	 * 			The time a worm's jump takes (air-time).
 	 */
 	// TODO
-	public double getJumpTime(double timeStep) {
+	public double getJumpTime() {
 		return this.getJumpDistance()
 				/ (this.getInitialVelocity() * Math.cos(this.getOrientation()));
 	}
@@ -527,19 +533,19 @@ public class Worm {
 	/**
 	 * Function that gives the x,y-coordinates of this worm at a given moment t in the jump.
 	 * 
-	 * @param t 
-	 * 			The time for which the x,y-coordinates have to be calculated.
+	 * @param time 	
+	 * 			The time for which the x,y-coordinates have to be calculated. getJumpTime()
 	 * @return result
 	 * 			The array which holds the x,y-coordinates of this worm at time t in its jump.
 	 */
-	public double[] getJumpStep(double t) {
+	public double[] getJumpStep(double time) {
 		double initVelocityX = this.getInitialVelocity()
 				* Math.cos(this.getOrientation());
 		double initVelocityY = this.getInitialVelocity()
 				* Math.sin(this.getOrientation());
-		double Xt = this.getX() + (initVelocityX * t);
+		double Xt = this.getX() + (initVelocityX * time);
 		double Yt = this.getY()
-				+ ((initVelocityY * t) - (.5 * this.g * Math.pow(t, 2)));
+				+ ((initVelocityY * time) - (.5 * this.g * Math.pow(time, 2)));
 		double[] result = { Xt, Yt };
 		return result;
 	}
@@ -554,9 +560,11 @@ public class Worm {
 	 * 			The condition for this worm to make a jump, is not fulfilled.
 	 */
 	public boolean canJump() {
-		return (Math.sin(this.getOrientation()) > 0);
+		if (!(this.getWorld().isAdjacent(this.getX(), this.getY(), this.getRadius()))
+				&& (this.actionPoints>= 0)){
+			return (Math.sin(this.getOrientation()) > 0);
+		}
 	}
-
 	/**
 	 * Function that calculates the force of this worm to make a jump.
 	 * 
@@ -718,7 +726,7 @@ public class Worm {
 	 * 			|		(new this).getRadius() == 0 && (new this).getMass == 0 && (new this).getName() == null
 	 */
 	public Worm terminate() {
-		return null;
+		return this.null;
 	}
 
 	/**
@@ -790,7 +798,7 @@ public class Worm {
 			double oldY = this.y;
 			while (!this.getWorld().isAdjacent(this.getX(), this.getY(),
 					this.getRadius())) {
-				this.y -= Util.DEFAULT_EPSILON;
+				this.y += this.radius;
 				if (!(0.0 <= this.getY() && this.getY() <= this.getWorld()
 						.getHeight())) {
 					this.terminate();
@@ -836,24 +844,43 @@ public class Worm {
 				% this.collectionOfWeapons.size());
 	}
 
-	private static boolean canShoot(){
-		
-		if (this.getActionPoints() >= this.projectile().getActionPoints()&& !this.isImpassable)
-			
+/**
+	 * Method checks if the worm can shoot
+	 * The worm has to have enough actionpoints to shoot
+	 * The projectile can not be adjacent to impassable terrain
+	 * 
+	 * @return 	true if the actionpoints are sufficient to Shoot && the terrain is passable
+	 * @return	false if the actionpoints are insufficient to shoot or the terrain is impassable
+	 */
+	public boolean canShoot(){
+
+		return (this.getActionPoints() >= this.projectile.getActionPointsCost())&& !(this.getWorld().isAdjacent(this.projectile.getX(), this.projectile.getY(), this.projectile.getRadius()));
+
 	}
 	/**
 	 * Method that makes this worm shoot.
 	 * 
 	 * @param yield
 	 * 			The yield with which this worm fires the weapon.
+	 * 
+	 * @effect If the given orientation is adjacent to impassable terrain
+	 * 			the worm can not move
+	 * @effect The projectile will jump till it hits a worm 
+	 * 			||impassable terrain || out of the world boundaries
+	 * @effect actionpoints are reduced by the cost of shooting
+	 * 
+	 * @throw illegalamountexception 
+	 * 		if yield is not in his boundary 0 to 100 => throw new illegalamountexception
 	 */
-	public void shoot(int yield) throws IllegalAmountException {
-		if (!isValidYield)
-			throw new IllegalAmountException("Yield is an invalid amount");
-		
-		
-		
-	}
+	public void shoot(int yield) throws IllegalAmountException{
+		if (!isValidYield){
+			throw new IllegalAmountException("invalid yield");
+		}
+		if (isValidYield){
+			this.projectile.jump();
+			this.setActionPoints(this.getActionPoints()-this.projectile.getActionPointsCost());
+			
+		}	
 	/**
 	 * Method checks if yield is a valid argument
 	 * 
