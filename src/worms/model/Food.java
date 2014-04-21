@@ -86,4 +86,8 @@ public class Food {
 	public boolean isActive() {
 		return (this != null);
 	}
+
+	public void terminate() {
+		// TODO Auto-generated method stub.
+	}
 }
