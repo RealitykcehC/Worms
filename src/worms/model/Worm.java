@@ -561,6 +561,43 @@ public class Worm {
 		this.x += getJumpDistance();
 		this.actionPoints = 0;
 	}
+	public void jump() throws ArithmeticException{
+	
+		if (!canJump()){
+			throw new ArithmeticException("Out of bounds");
+			return;
+		}
+		while (!world.isAdjacent(this.getX(), this.getY(), this.getRadius())&& 
+				world.liesInWorld(this.getX(), this.getY(), this.getRadius())){
+
+			this.x = this.getJumpStep(this.getJumpTime())[0];
+			this.y = this.getJumpStep(this.getJumpTime())[1];
+
+		}
+		this.actionPoints = 0;
+	}
+
+	/**
+	 * Function that makes this worm jump in the direction he's currently facing.
+	 * The worm has to have some action points left, otherwise he cannot make the jump.
+	 * All action points are being consumed when a jump is executed.
+	 * This worm cannot be facing downwards when jumping.
+	 * 	The location of the worm can't be Impassable
+	 * 
+	 * @return true
+	 * 			The condition for this worm to make a jump, is fulfilled (Math.sin(this.getOrientation()) has to be greater than 0, i.e. quadrants I and II).
+	 * 		
+	 * 
+	 * @return false
+	 * 			The condition for this worm to make a jump, is not fulfilled.
+	 */
+	public boolean canJump() {
+		if (!(this.getWorld().isImpassable(this.getX(), this.getY(), this.getRadius()))
+				&& (this.actionPoints<= 0)){
+			throw new IllegalArgumentException ("Can't Jump");
+		}
+		return (Math.sin(this.getOrientation()) > 0);
+	}
 
 	/**
 	 * Function that calculates the air-time of this worm when he jumps.
