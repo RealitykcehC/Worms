@@ -1,6 +1,7 @@
 package worms.model;
 
 import be.kuleuven.cs.som.annotate.Basic;
+import java.util.ArrayList;
 
 /**
  * A class that implements all the aspects related to the projectiles in this game. This is the superclass for the subclasses Rifle and Bazooka.
@@ -297,35 +298,27 @@ public class Projectile {
 	 * 			| if (!hitWorm.isAlive())
 	 * 			|	then (hitWorm.terminate())
 	 */
-	public void hit(Worm hitWorm) {
-		hitWorm.setHitPoints(hitWorm.getHitPoints()
-				- this.getHitPointsReduction());
-		if (!hitWorm.isAlive())
-			hitWorm.terminate();
-	}
-	/**
-	 * Boolean that tells if the projectile hits a worm 
-	 * 
-	 * @param other		check one by one worms in the wormcollection 
-	 * @return	true if the given projectile hits a worm in his direction of jump.
-	 * 			false otherwise
-	 */
-	public boolean CheckForCollision(Worm other){
-
-		double poleX;
-		double poleY;
-		double poleOtherX;
-		double poleOtherY
-
-		for (int i = 0; i < 360; i++){
-			poleX = (double)(this.getRadius() * Math.cos(Math.toRadians(i)));
-			poleY = (double)(this.getRadius()* Math.sin(Math.toRadians(i)));
-			poleOtherX = (double)(other.getRadius() * Math.cos(Math.toRadians(i)));
-			poleOtherY = (double)(other.getRadius()* Math.sin(Math.toRadians(i)));
-			if (this.getX() + poleX - other.getX() - poleOtherX <= Math.EPSILON && this.getY() + poleY - other.getY() - poleOtherY<= Math.EPSILON)
-				return true;
-			return false;
+	public void hit(Worm worm) {
+		for (int i = 0; i < worm.getWorld().getWorms().size()-1; i++) {
+			if ((collision(((ArrayList<Worm>) worm.getWorld().getWorms()).get(i))&& !(((ArrayList<Worm>) worm.getWorld().getWorms()).get(i).isActive()))){
+				((ArrayList<Worm>) worm.getWorld().getWorms()).get(i).setHitPoints(((ArrayList<Worm>) worm.getWorld().getWorms()).get(i).getHitPoints() - this.getHitPointsReduction());
+				this.terminate();
+			}
+			if (!((ArrayList<Worm>) worm.getWorld().getWorms()).get(i).isAlive())
+				((ArrayList<Worm>) worm.getWorld().getWorms()).get(i).terminate();
 		}
+	}
+
+	public boolean collision(Worm hitWorm) {
+		if (Math.pow(this.getWorm().getRadius() - hitWorm.getRadius(), 2.0) <= Math
+				.pow(this.getX() - hitWorm.getX(), 2.0)
+				+ Math.pow(this.getY() - hitWorm.getY(), 2.0)
+				&& Math.pow(this.getX() - hitWorm.getX(), 2.0)
+						+ Math.pow(this.getY() - hitWorm.getY(), 2.0) <= Math
+							.pow(this.getRadius() + hitWorm.getRadius(), 2.0))
+			return true;
+		return false;
+	}
 
 	// 3² = x <=> 2 = ³log(x)
 	// r³ = x => r = ?
