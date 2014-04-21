@@ -216,6 +216,24 @@ public class Worm {
 	public String getName() {
 		return this.name;
 	}
+	/**
+	 * This method changes the name of given worm to a new valid name
+	 * 
+	 * @param	newName 	this.name equals newName if newName is valid
+	 * 
+	 * @post 	newName must be two characters long and starts with an uppercase letter.
+	 * 		newName can only use letters (upper- and lowercase), quotes (single and double),
+	 * 		numbers and spaces.
+	 */
+	@Basic 
+	public String setName (newName) throw IllegalArgumentException {
+		
+		if (!isValidName(newName)){
+			throw new IllegalArgumentException("!isValidName");
+		}
+		this.name == newName;
+		
+	}
 
 	/**
 	 * Function that returns the minimal radius of this worm.
