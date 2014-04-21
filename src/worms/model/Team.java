@@ -19,7 +19,7 @@ public class Team {
 	 * Declaration of variables.
 	 */
 	private String name;
-	private ArrayList<Worm> teamMembers;
+	private ArrayList<Worm> teamMembers = new ArrayList<Worm>();
 
 	/**
 	 * Constructor of the class Team.
@@ -63,23 +63,6 @@ public class Team {
 	}
 
 	/**
-	 * Function that adds a worm to this team.
-	 * 
-	 * @param worm
-	 * 			The worm that has to be added to this team
-	 * @post	The provided worm has to be a part of this team
-	 * 			| (new this).teamMembers.contains(worm) == true
-	 * @throws	IllegalArgumentException
-	 * 			The worm has to be a valid worm, i.e. it exists.
-	 * 			| worm == null
-	 */
-	public void addWormToTeam(Worm worm) throws IllegalArgumentException {
-		if (worm == null)
-			throw new IllegalArgumentException();
-		this.teamMembers.add(worm);
-	}
-
-	/**
 	 * Function that returns the name of this team.
 	 * 
 	 * @return this.name
@@ -107,5 +90,18 @@ public class Team {
 				counter++;
 		}
 		return counter;
+	}
+	
+	public ArrayList<Worm> getLiveWormsInTeam() {
+		ArrayList<Worm> liveWorms = new ArrayList<Worm>();
+		for (Worm liveWorm : this.teamMembers)
+			if (liveWorm.isAlive())
+				liveWorms.add(liveWorm);
+		return liveWorms;
+				
+	}
+	
+	public void addTeamMember(Worm worm) {
+		this.teamMembers.add(worm);
 	}
 }
