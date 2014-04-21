@@ -33,7 +33,6 @@ public class Facade implements IFacade {
 		world.addEmptyTeam(newName);
 	}
 
-	// TODO ...
 	/**
 	 * Function that adds a piece of food to the provided world.
 	 * 
@@ -427,7 +426,11 @@ public class Facade implements IFacade {
 	public String getTeamName(Worm worm) throws ModelException {
 		if (worm == null)
 			throw new ModelException("Invalid worm: null");
-		return worm.getTeamName();
+		try {
+			return worm.getTeamName();
+		} catch (NullPointerException e) {
+			throw new ModelException("Invalid team name");
+		}
 	}
 
 	/**
@@ -796,7 +799,11 @@ public class Facade implements IFacade {
 	public void startGame(World world) throws ModelException {
 		if (world == null)
 			throw new ModelException("Invalid world: null");
-		world.startGame();
+		try {
+			world.startGame();
+		} catch (RuntimeException e) {
+			throw new ModelException("No worms in the world.");
+		}
 	}
 
 	/**
