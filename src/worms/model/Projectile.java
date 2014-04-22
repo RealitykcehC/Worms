@@ -1,7 +1,6 @@
 package worms.model;
 
 import be.kuleuven.cs.som.annotate.Basic;
-import java.util.ArrayList;
 
 /**
  * A class that implements all the aspects related to the projectiles in this game. This is the superclass for the subclasses Rifle and Bazooka.
@@ -30,15 +29,17 @@ public class Projectile {
 	private double x, y, direction;
 	private int actionPointsCost = 0; // Default cost, the amount will be
 										// specified in the subclasses.
-	private Worm worm;
+	private int hitPointsReduce = 0; // Default Hit Points that need to be
+										// reduced. It will be specified in the
+										// subclasses.
 	private double mass = 0; // Default mass, the mass will be specified in the
 								// subclasses.
 	private double force = 0; // Default force, the force will be specified in
 								// the subclasses.
-	private int hitPointsReduce = 0; // Default Hit Points that need to be
-										// reduced. It will be specified in the
-										// subclasses.
+	private double upperForce, lowerForce;
+	private boolean isTerminated = false;
 	private String weaponName = "Projectile";
+	private Worm worm;
 
 	/**
 	 * Constructor of the class Projectile.
@@ -162,69 +163,11 @@ public class Projectile {
 	public double getForce() {
 		return this.force;
 	}
-
-	/**
-	 * Function that sets the x-coordinate of this projectile to the new x-coordinate, which is provided.
-	 * 
-	 * @param newX
-	 * 			The newly provided x-coordinate
-	 * @post	The x-coordinate of this projectile has to be set to the new x-coordinate.
-	 * 			| (new this).getX() == newX
-	 * @throws	IllegalArgumentException
-	 * 			The new x-coordinate of this projectile has to be valid, otherwise an exception should be thrown.
-	 * 			| !Worm.isValidX(newX)
-	 */
-	public void setX(double newX) throws IllegalArgumentException {
-		if (!Worm.isValidX(newX))
-			throw new IllegalArgumentException();
-		this.x = newX;
+	
+	public double getRadius() {
+		return Math.pow((3 * (mass / density)) / (4 * Math.PI), 1 / 3);
 	}
-
-	/**
-	 * Function which sets the y-coordinate of this projectile to the newly provided y-coordinate.
-	 * 
-	 * @param newY
-	 * 			The new y-coordinate
-	 * @post	The y-coordinate of this projectile has to be set to the new y-coordinate.
-	 * 			| (new this).getY() == newY
-	 * @throws	IllegalArgumentException
-	 * 			The new y-coordinate of this projectile has to be valid, otherwise an exception has to be thrown.
-	 * 			| !Worm.isValidY(newY)
-	 */
-	public void setY(double newY) throws IllegalArgumentException {
-		if (!Worm.isValidY(newY))
-			throw new IllegalArgumentException();
-		this.y = newY;
-	}
-
-	/**
-	 * Function which fires this projectile.
-	 * The x-coordinate of this projectile is the starting x-coordinate added to the distance this projectile travels.
-	 * The Action Points of the worm that shot this projectile has to be adjusted. This means that the cost to fire this projectile has to be subtracted from the worm's
-	 * current amount of Action Points.
-	 * When needed, the projectile will fall if it didn't hit anything yet.
-	 * 
-	 * @post	The x-coordinate of this projectile has to be adjusted. The new x-coordinate is equal to the old one added to the distance of the shot.
-	 * 			| (new this).getX() == this.getX() + this.getJumpDistance()
-	 * @post	Should the new amount of Action Points of the worm that fired become 0, the worm will be terminated (i.e. he dies).
-	 * 			| if (this.getWorm().getActionPoints() == 0)
-	 * 			|	then (this.getWorm().terminate())
-	 * @throws	ArithmeticException
-	 * 			The x-coordinate, after having traveled the distance of the shot, has to be valid.
-	 * 			| !Worm.isValidX(this.getX() + this.getJumpDistance())
-	 */
-	public void jump(double timeStep) throws ArithmeticException {
-		// TODO Hit an impassable object / worm? => Explode!
-		if (!Worm.isValidX(this.getX() + this.getJumpDistance()))
-			throw new ArithmeticException();
-		this.setX(this.getX() + this.getJumpDistance());
-		this.getWorm().setActionPoints(
-				this.getWorm().getActionPoints() - this.getActionPointsCost());
-		this.fall();
-		if (this.getWorm().getActionPoints() == 0)
-			this.getWorm().terminate();
-	}
-
+	
 	/**
 	 * Function that returns the time this projectile will travel before falling down or exploding (given that it didn't hit an impassable position already).
 	 * @param timeStep 
@@ -232,12 +175,22 @@ public class Projectile {
 	 * @return this.getJumpDistance() / (this.getInitialVelocity() * Math.cos(this.getOrientation()))
 	 * 			The time this projectile will travel before falling down or exploding.
 	 */
-	// TODO
 	public double getJumpTime(double timeStep) {
-		return this.getJumpDistance()
-				/ (this.getInitialVelocity() * Math.cos(this.getOrientation()));
+		double newX = 0, newY = 0;
+		double[] jumpStep = new double[2];
+		double totalJumpTime = 0;
+		do {
+			jumpStep = this.getJumpStep(totalJumpTime);
+			newX = jumpStep[0];
+			newY = jumpStep[1];
+			totalJumpTime += timeStep;
+		} while (this.getRadius() >= Math.sqrt(Math.pow(this.getX() - newX, 2)
+				+ Math.pow(this.getY() - newY, 2)) || !(isJumpFinished(newX, newY)));
+		// || !(isJumpFinished(newX, newY)));
+		// Starting methods call this method too often: program gets stuck.
+		return totalJumpTime;
 	}
-
+	
 	/**
 	 * Function which returns an array which holds the (x,y)-coordinates of this projectile after being shot at time t.
 	 * 
@@ -279,12 +232,96 @@ public class Projectile {
 	public double getInitialVelocity() {
 		return (this.getForce() / this.getMass()) * .5;
 	}
+	
+	/**
+	 * Function that returns the name of this weapon.
+	 * 
+	 * @return this.weaponName
+	 * 			The name of this weapon
+	 */
+	public String getWeaponName() {
+		return this.weaponName;
+	}
+	
+	public void setForce(int yield) {
+		this.force = this.lowerForce + (this.upperForce - this.lowerForce) * (yield / 100);
+	}
 
 	/**
-	 * Function that makes this projectile fall, until it either hits another worm of it hits an impassable object.
+	 * Function that sets the x-coordinate of this projectile to the new x-coordinate, which is provided.
+	 * 
+	 * @param newX
+	 * 			The newly provided x-coordinate
+	 * @post	The x-coordinate of this projectile has to be set to the new x-coordinate.
+	 * 			| (new this).getX() == newX
+	 * @throws	IllegalArgumentException
+	 * 			The new x-coordinate of this projectile has to be valid, otherwise an exception should be thrown.
+	 * 			| !Worm.isValidX(newX)
 	 */
-	public void fall() {
-		// TODO Implement this function.
+	public void setX(double newX) throws IllegalArgumentException {
+		if (!Worm.isValidX(newX))
+			throw new IllegalArgumentException();
+		this.x = newX;
+	}
+
+	/**
+	 * Function which sets the y-coordinate of this projectile to the newly provided y-coordinate.
+	 * 
+	 * @param newY
+	 * 			The new y-coordinate
+	 * @post	The y-coordinate of this projectile has to be set to the new y-coordinate.
+	 * 			| (new this).getY() == newY
+	 * @throws	IllegalArgumentException
+	 * 			The new y-coordinate of this projectile has to be valid, otherwise an exception has to be thrown.
+	 * 			| !Worm.isValidY(newY)
+	 */
+	public void setY(double newY) throws IllegalArgumentException {
+		if (!Worm.isValidY(newY))
+			throw new IllegalArgumentException();
+		this.y = newY;
+	}
+	
+	public boolean canJump() {
+		if (this.getWorm().getActionPoints() - this.getActionPointsCost() < 0)
+			return false;
+		if (this.getWorm().getWorld().isImpassable(this.getX(), this.getY(),
+				this.getRadius()))
+			return false;
+		return true;
+	}
+
+	/**
+	 * Function which fires this projectile.
+	 * The x-coordinate of this projectile is the starting x-coordinate added to the distance this projectile travels.
+	 * The Action Points of the worm that shot this projectile has to be adjusted. This means that the cost to fire this projectile has to be subtracted from the worm's
+	 * current amount of Action Points.
+	 * When needed, the projectile will fall if it didn't hit anything yet.
+	 * 
+	 * @post	The x-coordinate of this projectile has to be adjusted. The new x-coordinate is equal to the old one added to the distance of the shot.
+	 * 			| (new this).getX() == this.getX() + this.getJumpDistance()
+	 * @post	Should the new amount of Action Points of the worm that fired become 0, the worm will be terminated (i.e. he dies).
+	 * 			| if (this.getWorm().getActionPoints() == 0)
+	 * 			|	then (this.getWorm().terminate())
+	 * @throws	ArithmeticException
+	 * 			The x-coordinate, after having traveled the distance of the shot, has to be valid.
+	 * 			| !Worm.isValidX(this.getX() + this.getJumpDistance())
+	 */
+	public void jump(double timeStep) throws ArithmeticException {
+		double newX = 0, newY = 0;
+		double oldX = this.getX(), oldY = this.getY();
+		double[] jumpStep = new double[2];
+		double totalJumpTime = 0;
+		if (!canJump())
+			throw new ArithmeticException();
+		do {
+			jumpStep = this.getJumpStep(totalJumpTime);
+			newX = jumpStep[0];
+			newY = jumpStep[1];
+			totalJumpTime += timeStep;
+		} while (this.getRadius() >= Math.sqrt(Math.pow(oldX - newX, 2)
+				+ Math.pow(oldY - newY, 2))|| !(isJumpFinished(newX, newY))); // 
+		this.setX(newX);
+		this.setY(newY);
 	}
 
 	/**
@@ -298,36 +335,15 @@ public class Projectile {
 	 * 			| if (!hitWorm.isAlive())
 	 * 			|	then (hitWorm.terminate())
 	 */
-	public void hit(Worm worm) {
-		for (int i = 0; i < worm.getWorld().getWorms().size()-1; i++) {
-			if ((collision(((ArrayList<Worm>) worm.getWorld().getWorms()).get(i))&& !(((ArrayList<Worm>) worm.getWorld().getWorms()).get(i).isActive()))){
-				((ArrayList<Worm>) worm.getWorld().getWorms()).get(i).setHitPoints(((ArrayList<Worm>) worm.getWorld().getWorms()).get(i).getHitPoints() - this.getHitPointsReduction());
+	public void hitsWorm() {
+		for (Worm hitWorm : this.getWorm().getWorld().getWorms()) {
+			if (Math.sqrt(Math.pow((this.getX() - hitWorm.getX()), 2)
+					+ Math.pow((this.getY() - hitWorm.getY()), 2)) < this
+					.getRadius() + hitWorm.getRadius()) {
+				hitWorm.setHitPoints(hitWorm.getHitPoints() - this.getHitPointsReduction());
 				this.terminate();
 			}
-			if (!((ArrayList<Worm>) worm.getWorld().getWorms()).get(i).isAlive())
-				((ArrayList<Worm>) worm.getWorld().getWorms()).get(i).terminate();
 		}
-	}
-
-	public boolean collision(Worm hitWorm) {
-		if (Math.pow(this.getWorm().getRadius() - hitWorm.getRadius(), 2.0) <= Math
-				.pow(this.getX() - hitWorm.getX(), 2.0)
-				+ Math.pow(this.getY() - hitWorm.getY(), 2.0)
-				&& Math.pow(this.getX() - hitWorm.getX(), 2.0)
-						+ Math.pow(this.getY() - hitWorm.getY(), 2.0) <= Math
-							.pow(this.getRadius() + hitWorm.getRadius(), 2.0))
-			return true;
-		return false;
-	}
-
-	// 3² = x <=> 2 = ³log(x)
-	// r³ = x => r = ?
-	// r = \³|x
-	// TODO Derdemachtswortel!!!!!!!
-	public double getRadius() {
-		double volume = mass / density;
-		return (volume * 3) / (4 * Math.PI); // Hiervan derdemachtswortel
-												// teruggeven!!!
 	}
 
 	/**
@@ -340,7 +356,7 @@ public class Projectile {
 	 * 			This projectile is inactive.
 	 */
 	public boolean isActive() {
-		return (this != null);
+		return (!this.isTerminated());
 	}
 
 	/**
@@ -349,19 +365,20 @@ public class Projectile {
 	 * @return null
 	 * 			The new value for this projectile.
 	 */
-	public Projectile terminate() {
+	public void terminate() {
 		this.worm = null;
-		return null;
+		this.isTerminated = true;
 	}
-
-	/**
-	 * Function that returns the name of this weapon.
-	 * 
-	 * @return this.weaponName
-	 * 			The name of this weapon
-	 */
-	public String getWeaponName() {
-		return this.weaponName;
-		// return null; ???
+	
+	public boolean isTerminated() {
+		return this.isTerminated;
+	}
+	
+	private boolean isJumpFinished(double newX, double newY) {
+		boolean wormLiesInWorld = this.getWorm().getWorld().liesInWorld(newX, newY,
+				this.getRadius());
+		boolean wormHitsAdjTerrain = this.getWorm().getWorld().isAdjacent(newX, newY,
+				this.getRadius());
+		return (!wormLiesInWorld && wormHitsAdjTerrain);
 	}
 }
