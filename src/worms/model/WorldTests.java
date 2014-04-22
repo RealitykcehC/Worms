@@ -176,13 +176,7 @@ public class WorldTests {
 	}
 	@Test
 	public void testStartNextTurn() {
-		this.currentWorm = ((ArrayList<Worm>) this.getWorms())
-				.get((((ArrayList<Worm>) this.getWorms()).indexOf(this
-						.getCurrentWorm()) + 1) % getWorms().size());
-		this.getCurrentWorm().setHitPoints(
-				this.getCurrentWorm().getHitPoints() + 10);
-		this.getCurrentWorm().setActionPoints(
-				this.getCurrentWorm().getMaxActionPoints());
+		
 	}
 
 	@Test
