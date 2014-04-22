@@ -162,7 +162,7 @@ public class WorldTests {
 		world.addFoodToWorld();
 		world.addWormToWorld();
 		world.addEmptyTeam();
-		asserTrue(world.getObjectsInWorld() == 3);
+		assertTrue(world.getObjectsInWorld().size() == 3);
 	}
 	@Test
 	public void testCalculateLocationStatus_LegalCases() {
