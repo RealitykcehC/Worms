@@ -722,7 +722,11 @@ public class Facade implements IFacade {
 	public void jump(Worm worm, double timeStep) throws ModelException {
 		if (worm == null)
 			throw new ModelException("Invalid worm: null");
-		worm.jump(timeStep);
+		try {
+			worm.jump(timeStep);
+		} catch (ArithmeticException e) {
+			throw new ModelException("This worm cannot jump or the ending point isn't valid.");
+		}
 	}
 
 	/**
@@ -740,7 +744,11 @@ public class Facade implements IFacade {
 	public void move(Worm worm) throws ModelException {
 		if (worm == null)
 			throw new ModelException("Invalid worm: null");
-		worm.move();
+		try {
+			worm.move();
+		} catch (RuntimeException e) {
+			throw new ModelException("This worm cannot move right now.");
+		}
 	}
 
 	/**
