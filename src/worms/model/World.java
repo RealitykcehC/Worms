@@ -14,22 +14,21 @@ public class World {
 	/**
 	 * Declaration of variables.
 	 */
-	private double width, height;
 	public static final double lowerBoundX = 0.0;
 	public static final double lowerBoundY = 0.0;
 	public static final double upperBoundX = Double.MAX_VALUE;
 	public static final double upperBoundY = Double.MAX_VALUE;
+	private final double maxUpperLimitRadiusWormInit = 1.0;
+	private double width, height;
+	private boolean[][] area;
+	private Random randomSeed;
+	private boolean passable, adjacent, impassable;
+	private boolean isStarted = false;
 	private ArrayList<Worm> collectionOfWorms = new ArrayList<Worm>();
 	private ArrayList<Food> collectionOfFood = new ArrayList<Food>();
 	private ArrayList<Team> collectionOfTeams = new ArrayList<Team>();
 	private Worm currentWorm;
-	private Projectile activeProjectile;
-	private boolean[][] area;
-	private boolean passable, adjacent, impassable;
-	private final double maxUpperLimitRadiusWormInit = 1.0;
-	private Random randomSeed;
-	private boolean isStarted = false;
-
+	
 	/**
 	 * Constructor of the class World.
 	 * 
@@ -58,37 +57,7 @@ public class World {
 		this.area = passableMap;
 		this.randomSeed = random;
 	}
-
-	/**
-	 * Function that checks whether or not the provided width is valid.
-	 * 
-	 * @return true
-	 * 			The provided width is valid
-	 * @return false
-	 * 			The provided width is invalid
-	 */
-	public static boolean isValidWidth(double width) {
-		if (!Double.isNaN(width))
-			if (lowerBoundX <= width && width <= upperBoundX)
-				return true;
-		return false;
-	}
-
-	/**
-	 * Function that checks whether or not the provided height is valid.
-	 * 
-	 * @return true
-	 * 			The provided height is valid
-	 * @return false
-	 * 			The provided height is invalid
-	 */
-	public static boolean isValidHeight(double height) {
-		if (!Double.isNaN(height))
-			if (lowerBoundY <= height && height <= upperBoundY)
-				return true;
-		return false;
-	}
-
+	
 	/**
 	 * Function that returns the width of this world.
 	 * 
@@ -108,259 +77,11 @@ public class World {
 	public double getHeight() {
 		return this.height;
 	}
-
-	/**
-	 * Function that adds a worm to this world.
-	 */
-	public void addWormToWorld() {
-		if (this.isStarted())
-			return;
-		Random randomGen = new Random();
-		int oldNumberOfWorms = this.collectionOfWorms.size();
-		double radius = 0.25 + (this.maxUpperLimitRadiusWormInit - 0.25)
-				* randomGen.nextDouble();
-		double initX = 0, initY = 0;
-		double centerX = this.getWidth() / 2.0;
-		double centerY = this.getHeight() / 2.0;
-		double xPos, yPos;
-		double angleStartToCenter = 0;
-		do {
-			int random = randomGen.nextInt(4) + 1;
-			if (random == 1 || random == 2) { // Lower and upper side as
-												// starting point.
-				initX = (this.getWidth() - 3.0 * radius)
-						* randomGen.nextDouble() + radius * 1.5;
-				if (random == 1) // Upper side.
-					initY = this.getHeight() - radius * 1.5;
-				if (random == 2) // Lower side.
-					initY = radius * 1.5;
-			} else if (random == 3 || random == 4) { // Left and right side as
-														// starting point.
-				initY = (this.getHeight() - 3.0 * radius)
-						* randomGen.nextDouble() + radius * 1.5;
-				if (random == 3) // Left side.
-					initX = radius * 1.5;
-				if (random == 4) // Right side.
-					initX = this.getWidth() - radius * 1.5;
-			}
-			xPos = initX;
-			yPos = initY;
-			// Determine quadrant of initX and initY.
-			if (initY >= centerY && initX >= centerX) { // Quadrant 1
-				angleStartToCenter = Math.PI
-						+ Math.atan((initY - centerY) / (initX - centerX));
-				while (xPos >= centerX && yPos >= centerY) {
-					if (isAdjacent(xPos, yPos, radius)) {
-						this.collectionOfWorms.add(new Worm(this, xPos, yPos,
-								angleStartToCenter, radius, "Default"));
-						break;
-					} else {
-						// Step for iteration is 10% of radius, because the
-						// boundary for the worm to be adjacent, is 10% of the
-						// radius.
-						xPos += Math.cos(angleStartToCenter) * .1 * radius;
-						yPos += Math.sin(angleStartToCenter) * .1 * radius;
-					}
-				}
-			} else if (initY >= centerY && initX <= centerX) { // Quadrant 2
-				angleStartToCenter = (3.0 / 2.0) * Math.PI
-						+ Math.atan((centerX - initX) / (initY - centerY));
-				while (xPos <= centerX && yPos >= centerY) {
-					if (isAdjacent(xPos, yPos, radius)) {
-						this.collectionOfWorms.add(new Worm(this, xPos, yPos,
-								angleStartToCenter, radius, "Default"));
-						break;
-					} else {
-						// Step for iteration is 10% of radius, because the
-						// boundary for the worm to be adjacent, is 10% of the
-						// radius.
-						xPos += Math.cos(angleStartToCenter) * .1 * radius;
-						yPos += Math.sin(angleStartToCenter) * .1 * radius;
-					}
-				}
-			} else if (initY <= centerY && initX <= centerX) { // Quadrant 3
-				angleStartToCenter = Math.atan((centerY - initY)
-						/ (centerX - initX));
-				while (xPos <= centerX && yPos <= centerY) {
-					if (isAdjacent(xPos, yPos, radius)) {
-						this.collectionOfWorms.add(new Worm(this, xPos, yPos,
-								angleStartToCenter, radius, "Default"));
-						break;
-					} else {
-						// Step for iteration is 10% of radius, because the
-						// boundary for the worm to be adjacent, is 10% of the
-						// radius.
-						xPos += Math.cos(angleStartToCenter) * .1 * radius;
-						yPos += Math.sin(angleStartToCenter) * .1 * radius;
-					}
-				}
-			} else if (initY <= centerY && initX >= centerX) { // Quadrant 4
-				angleStartToCenter = (Math.PI / 2)
-						+ Math.atan((initX - centerX) / (centerY - initY));
-				while (xPos >= centerX && yPos <= centerY) {
-					if (isAdjacent(xPos, yPos, radius)) {
-						this.collectionOfWorms.add(new Worm(this, xPos, yPos,
-								angleStartToCenter, radius, "Default"));
-						break;
-					} else {
-						// Step for iteration is 10% of radius, because the
-						// boundary for the worm to be adjacent, is 10% of the
-						// radius.
-						xPos += Math.cos(angleStartToCenter) * .1 * radius;
-						yPos += Math.sin(angleStartToCenter) * .1 * radius;
-					}
-				}
-			}
-		} while (oldNumberOfWorms + 1 != this.collectionOfWorms.size());
-		if (!this.collectionOfTeams.isEmpty())
-			if (randomGen.nextDouble() <= .5)
-				this.collectionOfWorms
-						.get(this.collectionOfWorms.size() - 1)
-						.addToTeam(
-								this.collectionOfTeams.get(randomGen
-										.nextInt(this.collectionOfTeams.size())));
+	
+	public Random getRandomSeed() {
+		return this.randomSeed;
 	}
 	
-	private boolean canCreateTeam() {
-		return (this.collectionOfTeams.size() < 10 && !this.isStarted());
-	}
-	
-	private boolean isStarted() {
-		return this.isStarted;
-	}
-
-	/**
-	 * Function that adds a piece of food to this world.
-	 */
-	public void addFoodToWorld() {
-		if (this.isStarted())
-			return;
-		Random randomGen = new Random();
-		int oldNumberOfFood = this.collectionOfFood.size();
-		double initX = 0, initY = 0;
-		double centerX = this.getWidth() / 2.0;
-		double centerY = this.getHeight() / 2.0;
-		double xPos, yPos;
-		double angleStartToCenter;
-		do {
-			int random = randomGen.nextInt(4) + 1;
-			if (random == 1 || random == 2) { // Lower and upper side as
-												// starting
-												// point.
-				initX = (this.getWidth() - 3.0 * Food.radius)
-						* randomGen.nextDouble() + Food.radius * 1.5;
-				if (random == 1) // Upper side.
-					initY = this.getHeight() - Food.radius * 1.5;
-				if (random == 2) // Lower side.
-					initY = Food.radius * 1.5;
-			} else if (random == 3 || random == 4) { // Left and right side as
-														// starting
-				// point.
-				initY = (this.getHeight() - 3.0 * Food.radius)
-						* randomGen.nextDouble() + Food.radius * 1.5;
-				if (random == 3) // Left side.
-					initX = Food.radius * 1.5;
-				if (random == 4) // Right side.
-					initX = this.getWidth() - Food.radius * 1.5;
-			}
-			xPos = initX;
-			yPos = initY;
-			// Determine quadrant of initX and initY.
-			if (initY >= centerY && initX >= centerX) { // Quadrant 1
-				angleStartToCenter = Math.PI
-						+ Math.atan((initY - centerY) / (initX - centerX));
-				while (xPos >= centerX && yPos >= centerY) {
-					if (isAdjacent(xPos, yPos, Food.radius)) {
-						this.collectionOfFood.add(new Food(xPos, yPos));
-						break;
-					} else {
-						// Step for iteration is 10% of radius, because the
-						// boundary for the food to be adjacent, is 10% of the
-						// radius.
-						xPos += Math.cos(angleStartToCenter) * .1 * Food.radius;
-						yPos += Math.sin(angleStartToCenter) * .1 * Food.radius;
-					}
-				}
-			} else if (initY >= centerY && initX <= centerX) { // Quadrant 2
-				angleStartToCenter = (3.0 / 2.0) * Math.PI
-						+ Math.atan((centerX - initX) / (initY - centerY));
-				while (xPos <= centerX && yPos >= centerY) {
-					if (isAdjacent(xPos, yPos, Food.radius)) {
-						this.collectionOfFood.add(new Food(xPos, yPos));
-						break;
-					} else {
-						// Step for iteration is 10% of radius, because the
-						// boundary for the food to be adjacent, is 10% of the
-						// radius.
-						xPos += Math.cos(angleStartToCenter) * .1 * Food.radius;
-						yPos += Math.sin(angleStartToCenter) * .1 * Food.radius;
-					}
-				}
-			} else if (initY <= centerY && initX <= centerX) { // Quadrant 3
-				angleStartToCenter = Math.atan((centerY - initY)
-						/ (centerX - initX));
-				while (xPos <= centerX && yPos <= centerY) {
-					if (isAdjacent(xPos, yPos, Food.radius)) {
-						this.collectionOfFood.add(new Food(xPos, yPos));
-						break;
-					} else {
-						// Step for iteration is 10% of radius, because the
-						// boundary for the food to be adjacent, is 10% of the
-						// radius.
-						xPos += Math.cos(angleStartToCenter) * .1 * Food.radius;
-						yPos += Math.sin(angleStartToCenter) * .1 * Food.radius;
-					}
-				}
-			} else if (initY <= centerY && initX >= centerX) { // Quadrant 4
-				angleStartToCenter = (Math.PI / 2)
-						+ Math.atan((initX - centerX) / (centerY - initY));
-				while (xPos >= centerX && yPos <= centerY) {
-					if (isAdjacent(xPos, yPos, Food.radius)) {
-						this.collectionOfFood.add(new Food(xPos, yPos));
-						break;
-					} else {
-						// Step for iteration is 10% of radius, because the
-						// boundary for the food to be adjacent, is 10% of the
-						// radius.
-						xPos += Math.cos(angleStartToCenter) * .1 * Food.radius;
-						yPos += Math.sin(angleStartToCenter) * .1 * Food.radius;
-					}
-				}
-			}
-		} while (this.collectionOfFood.size() != oldNumberOfFood + 1);
-	}
-
-	/**
-	 * Function that adds a new team of worms to this world.
-	 * 
-	 * @param newName
-	 * 			The name of the new team
-	 */
-	public void addEmptyTeam(String newName) {
-		if (this.canCreateTeam())
-			this.collectionOfTeams.add(new Team(newName));
-	}
-
-	/**
-	 * Function that returns the active projectile from this world.
-	 * 
-	 * @return this.activeProjectile
-	 * 			The projectile that is active in this world
-	 */
-	public Projectile getActiveProjectile() {
-		return this.activeProjectile;
-	}
-
-	public void removeFoodFromWorld(Food food) {
-		food.terminate();
-		this.collectionOfFood.remove(food);
-	}
-
-	public void removeWormFromWorld(Worm worm) {
-		worm.terminate();
-		this.collectionOfWorms.remove(worm);
-	}
-
 	/**
 	 * Function that returns the current worm of this world (i.e. the worm whose turn it is).
 	 * 
@@ -404,6 +125,16 @@ public class World {
 	}
 
 	/**
+	 * Function that returns the teams in this world.
+	 * 
+	 * @return this.collectionOfTeams
+	 * 			The teams in this world.
+	 */
+	public Collection<Team> getTeams() {
+		return this.collectionOfTeams;
+	}
+	
+	/**
 	 * Function that returns all the worms that are currently in this world (i.e. in the game).
 	 * 
 	 * @return this.collectionOfWorms
@@ -421,6 +152,148 @@ public class World {
 		return objectsList;
 	}
 	
+	/**
+	 * Function that returns the active projectile from this world.
+	 * 
+	 * @return this.activeProjectile
+	 * 			The projectile that is active in this world
+	 */
+	public Projectile getActiveProjectile() {
+		return this.getCurrentWorm().getProjectile();
+	}
+	
+	/**
+	 * Function that adds a worm to this world.
+	 */
+	public void addWormToWorld() {
+		if (this.isStarted())
+			return;
+		Random randomGen = new Random();
+		int oldNumberOfWorms = this.collectionOfWorms.size();
+		double radius = 0.25 + (this.maxUpperLimitRadiusWormInit - 0.25)
+				* randomGen.nextDouble();
+		do {
+			double[] resultOfLocation = this.locateNewObject(radius);
+			if (resultOfLocation[0] != -1)
+				// Other values of the result are trivial once the first is -1.
+				this.collectionOfWorms.add(new Worm(this, resultOfLocation[0],
+						resultOfLocation[1], resultOfLocation[2], radius,
+						"Default"));
+		} while (oldNumberOfWorms + 1 != this.collectionOfWorms.size());
+		// Optionally (at random), add the newly created worm to a random team.
+		if (!this.collectionOfTeams.isEmpty())
+			if (randomGen.nextDouble() <= .5)
+				this.collectionOfWorms
+						.get(this.collectionOfWorms.size() - 1)
+						.addToTeam(
+								this.collectionOfTeams.get(randomGen
+										.nextInt(this.collectionOfTeams.size())));
+	}
+	
+	public void removeWormFromWorld(Worm worm) {
+		worm.terminate();
+		this.collectionOfWorms.remove(worm);
+	}
+
+	/**
+	 * Function that adds a piece of food to this world.
+	 */
+	public void addFoodToWorld() {
+		if (this.isStarted())
+			return;
+		int oldNumberOfFood = this.collectionOfFood.size();
+		do {
+			double[] resultOfLocation = this.locateNewObject(Food.radius);
+			if (resultOfLocation[0] != -1)
+				// Other values of the result are trivial once the first is -1.
+				this.collectionOfFood.add(new Food(this, resultOfLocation[0],
+						resultOfLocation[1]));
+		} while (this.collectionOfFood.size() != oldNumberOfFood + 1);
+	}
+
+	public void removeFoodFromWorld(Food food) {
+		food.terminate();
+		this.collectionOfFood.remove(food);
+	}
+	
+	/**
+	 * Function that adds a new team of worms to this world.
+	 * 
+	 * @param newName
+	 * 			The name of the new team
+	 */
+	public void addEmptyTeam(String newName) {
+		if (this.canCreateTeam())
+			this.collectionOfTeams.add(new Team(newName));
+	}
+	
+	/**
+	 * Method that creates a new piece of food, adds it to the food of this world (i.e. the collection) 
+	 * and returns the newly created piece of food.
+	 * 
+	 * @param x
+	 * 			The x-coordinate of the food that has to be created
+	 * @param y
+	 * 			The y-coordinate of the food that has to be created
+	 * @return food
+	 * 			The newly created food
+	 */
+	public Food createFood(double x, double y) {
+		Food food = new Food(this, x, y);
+		this.collectionOfFood.add(food);
+		return food;
+	}
+
+	/**
+	 * Method that creates a new worm, adds it to the collection of worms that are part of this world 
+	 * and then returns the newly created worm.
+	 * 
+	 * @param x
+	 * 			The x-coordinate of the to be created worm
+	 * @param y
+	 * 			The y-coordinate of the to be created worm
+	 * @param direction
+	 * 			The direction of the to be created worm
+	 * @param radius
+	 * 			The radius of the to be created worm
+	 * @param name
+	 * 			The name of the to be created worm
+	 * @return worm
+	 * 			The newly created worm
+	 */
+	public Worm createWorm(double x, double y, double direction, double radius,
+			String name) {
+		Worm worm = new Worm(this, x, y, direction, radius, name);
+		this.collectionOfWorms.add(worm);
+		return worm;
+	}
+	
+	/**
+	 * Function that starts the game.
+	 */
+	public void startGame() throws RuntimeException {
+		if (this.collectionOfWorms.isEmpty())
+			// return;
+			throw new RuntimeException();
+		this.currentWorm = this.collectionOfWorms.get(0);
+		this.isStarted = true;
+	}
+	
+	/**
+	 * Function that starts a next turn.
+	 * Each new turn, the worm whose turn it is, is healed for 10 Hit Points and its 
+	 * Action Points are reset to the maximum amount of Action Points that worm can have.
+	 */
+	public void startNextTurn() {
+		this.currentWorm = ((ArrayList<Worm>) this.getWorms())
+				.get((((ArrayList<Worm>) this.getWorms()).indexOf(this
+						.getCurrentWorm()) + 1) % getWorms().size());
+		this.getCurrentWorm().setHitPoints(
+				this.getCurrentWorm().getHitPoints() + 10);
+		this.getCurrentWorm().setActionPoints(
+				this.getCurrentWorm().getMaxActionPoints());
+	}
+
 	public void calculateLocationStatus(double x, double y, double radius) {
 		double circleX, circleY;
 		this.impassable = false;
@@ -493,14 +366,6 @@ public class World {
 		return this.passable;
 	}
 
-	private int[] metricToPixels(double x, double y) {
-		double heightPerPixel = this.getHeight() / this.area.length;
-		double widthPerPixel = this.getWidth() / this.area[0].length;
-		int[] result = { (int) (x / widthPerPixel),
-				(int) ((this.getHeight() - y) / heightPerPixel) };
-		return result;
-	}
-
 	/**
 	 * Function that checks whether or not the game is finished, i.e. a team or an individual worm has 
 	 * won and is the only survivor.
@@ -538,83 +403,6 @@ public class World {
 	}
 
 	/**
-	 * Function that starts the game.
-	 */
-	public void startGame() throws RuntimeException{
-		if (this.collectionOfWorms.isEmpty())
-//			return;
-			throw new RuntimeException();
-		this.currentWorm = this.collectionOfWorms.get(0);
-		this.isStarted = true;
-	}
-
-	/**
-	 * Function that starts a next turn.
-	 * Each new turn, the worm whose turn it is, is healed for 10 Hit Points and its 
-	 * Action Points are reset to the maximum amount of Action Points that worm can have.
-	 */
-	public void startNextTurn() {
-		this.currentWorm = ((ArrayList<Worm>) this.getWorms())
-				.get((((ArrayList<Worm>) this.getWorms()).indexOf(this
-						.getCurrentWorm()) + 1) % getWorms().size());
-		this.getCurrentWorm().setHitPoints(
-				this.getCurrentWorm().getHitPoints() + 10);
-		this.getCurrentWorm().setActionPoints(
-				this.getCurrentWorm().getMaxActionPoints());
-	}
-
-	/**
-	 * Function that returns the teams in this world.
-	 * 
-	 * @return this.collectionOfTeams
-	 * 			The teams in this world.
-	 */
-	public Collection<Team> getTeams() {
-		return this.collectionOfTeams;
-	}
-
-	/**
-	 * Method that creates a new piece of food, adds it to the food of this world (i.e. the collection) 
-	 * and returns the newly created piece of food.
-	 * 
-	 * @param x
-	 * 			The x-coordinate of the food that has to be created
-	 * @param y
-	 * 			The y-coordinate of the food that has to be created
-	 * @return food
-	 * 			The newly created food
-	 */
-	public Food createFood(double x, double y) {
-		Food food = new Food(x, y);
-		this.collectionOfFood.add(food);
-		return food;
-	}
-
-	/**
-	 * Method that creates a new worm, adds it to the collection of worms that are part of this world 
-	 * and then returns the newly created worm.
-	 * 
-	 * @param x
-	 * 			The x-coordinate of the to be created worm
-	 * @param y
-	 * 			The y-coordinate of the to be created worm
-	 * @param direction
-	 * 			The direction of the to be created worm
-	 * @param radius
-	 * 			The radius of the to be created worm
-	 * @param name
-	 * 			The name of the to be created worm
-	 * @return worm
-	 * 			The newly created worm
-	 */
-	public Worm createWorm(double x, double y, double direction, double radius,
-			String name) {
-		Worm worm = new Worm(this, x, y, direction, radius, name);
-		this.collectionOfWorms.add(worm);
-		return worm;
-	}
-
-	/**
 	 * Method that checks whether the object with the provided (x,y)-coordinates and radius lies in this world or not.
 	 * 
 	 * @param x
@@ -631,5 +419,148 @@ public class World {
 	public boolean liesInWorld(double x, double y, double radius) {
 		return ((x + radius <= this.getWidth()) && (x - radius >= lowerBoundX)
 				&& (y + radius <= this.getHeight()) && (y - radius >= lowerBoundY));
+	}
+	
+	/**
+	 * Function that checks whether or not the provided width is valid.
+	 * 
+	 * @return true
+	 * 			The provided width is valid
+	 * @return false
+	 * 			The provided width is invalid
+	 */
+	public static boolean isValidWidth(double width) {
+		if (!Double.isNaN(width))
+			if (lowerBoundX <= width && width <= upperBoundX)
+				return true;
+		return false;
+	}
+
+	/**
+	 * Function that checks whether or not the provided height is valid.
+	 * 
+	 * @return true
+	 * 			The provided height is valid
+	 * @return false
+	 * 			The provided height is invalid
+	 */
+	public static boolean isValidHeight(double height) {
+		if (!Double.isNaN(height))
+			if (lowerBoundY <= height && height <= upperBoundY)
+				return true;
+		return false;
+	}
+	
+	private double[] locateNewObject(double radius) {
+		Random randomGen = new Random();
+		double initX = 0, initY = 0;
+		double angleStartToCenter;
+		double xPos, yPos;
+		double centerX = this.getWidth() / 2.0, centerY = this.getHeight() / 2.0;
+		int random = randomGen.nextInt(4) + 1;
+		if (random == 1 || random == 2) { // Lower and upper side as
+											// starting point.
+			initX = (this.getWidth() - 3.0 * radius) * randomGen.nextDouble()
+					+ radius * 1.5;
+			if (random == 1) // Upper side.
+				initY = this.getHeight() - radius * 1.5;
+			if (random == 2) // Lower side.
+				initY = radius * 1.5;
+		} else if (random == 3 || random == 4) { // Left and right side as
+													// starting point.
+			initY = (this.getHeight() - 3.0 * radius) * randomGen.nextDouble()
+					+ radius * 1.5;
+			if (random == 3) // Left side.
+				initX = radius * 1.5;
+			if (random == 4) // Right side.
+				initX = this.getWidth() - radius * 1.5;
+		}
+		xPos = initX;
+		yPos = initY;
+		// Determine quadrant of initX and initY.
+		if (initY >= centerY && initX >= centerX) { // Quadrant 1
+			angleStartToCenter = Math.PI
+					+ Math.atan((initY - centerY) / (initX - centerX));
+			while (xPos >= centerX && yPos >= centerY) {
+				if (isAdjacent(xPos, yPos, radius)) {
+					double[] result = { xPos, yPos, angleStartToCenter };
+					return result;
+				} else {
+					// Step for iteration is 10% of radius, because the
+					// boundary for the worm to be adjacent, is 10% of the
+					// radius.
+					xPos += Math.cos(angleStartToCenter) * .1 * radius;
+					yPos += Math.sin(angleStartToCenter) * .1 * radius;
+				}
+			}
+		} else if (initY >= centerY && initX <= centerX) { // Quadrant 2
+			angleStartToCenter = (3.0 / 2.0) * Math.PI
+					+ Math.atan((centerX - initX) / (initY - centerY));
+			while (xPos <= centerX && yPos >= centerY) {
+				if (isAdjacent(xPos, yPos, radius)) {
+					double[] result = { xPos, yPos, angleStartToCenter };
+					return result;
+				} else {
+					// Step for iteration is 10% of radius, because the
+					// boundary for the worm to be adjacent, is 10% of the
+					// radius.
+					xPos += Math.cos(angleStartToCenter) * .1 * radius;
+					yPos += Math.sin(angleStartToCenter) * .1 * radius;
+				}
+			}
+		} else if (initY <= centerY && initX <= centerX) { // Quadrant 3
+			angleStartToCenter = Math.atan((centerY - initY)
+					/ (centerX - initX));
+			while (xPos <= centerX && yPos <= centerY) {
+				if (isAdjacent(xPos, yPos, radius)) {
+					double[] result = { xPos, yPos, angleStartToCenter };
+					return result;
+				} else {
+					// Step for iteration is 10% of radius, because the
+					// boundary for the worm to be adjacent, is 10% of the
+					// radius.
+					xPos += Math.cos(angleStartToCenter) * .1 * radius;
+					yPos += Math.sin(angleStartToCenter) * .1 * radius;
+				}
+			}
+		} else if (initY <= centerY && initX >= centerX) { // Quadrant 4
+			angleStartToCenter = (Math.PI / 2)
+					+ Math.atan((initX - centerX) / (centerY - initY));
+			while (xPos >= centerX && yPos <= centerY) {
+				if (isAdjacent(xPos, yPos, radius)) {
+					double[] result = { xPos, yPos, angleStartToCenter };
+					return result;
+				} else {
+					// Step for iteration is 10% of radius, because the
+					// boundary for the worm to be adjacent, is 10% of the
+					// radius.
+					xPos += Math.cos(angleStartToCenter) * .1 * radius;
+					yPos += Math.sin(angleStartToCenter) * .1 * radius;
+				}
+			}
+		}
+		double[] result = { -1, -1, -1 };
+		return result;
+	}
+	
+	private int[] metricToPixels(double x, double y) {
+		double heightPerPixel = this.getHeight() / this.area.length;
+		double widthPerPixel = this.getWidth() / this.area[0].length;
+		int xResult = (int) (x / widthPerPixel);
+		xResult = Math.max(0, xResult);
+		xResult = Math.min(xResult, this.area[0].length - 1);
+		int yResult = (int) ((this.getHeight() - y) / heightPerPixel);
+		yResult = Math.max(0, yResult);
+		yResult = Math.min(yResult, this.area.length - 1);
+		int[] result = { xResult, yResult };
+		return result;
+	}
+
+	private boolean canCreateTeam() {
+		return (this.collectionOfTeams.size() < 10 && !this.isStarted());
+	}
+
+	private boolean isStarted() {
+		return this.isStarted;
 	}
 }
