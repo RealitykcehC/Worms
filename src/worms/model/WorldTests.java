@@ -50,7 +50,8 @@ public class WorldTests {
 
 	}
 	@Test 
-	public void testIsValidWidth_IllegalCase(){
+	public void testIsValidWidth_IllegalCase()
+		throws Exception{
 		
 		World testWorld = new World(illegalCoordinate,illegalCoordinate-9);
 		assertFalse(testWorld.isValidWidth(testWorld.getWidth()));
@@ -63,7 +64,8 @@ public class WorldTests {
 		assertTrue(world.isValidHeight(world.getheight));
 	}
 	@Test
-	public void testIsValidHeight_IllegalCase(){
+	public void testIsValidHeight_IllegalCase()
+		throws Exception{
 		
 		World testWorld = new World (illegalCoordinate, illegalCoordinate-9;
 		assertFalse(testWorld.isValidWidth(testWorld.getHeight()))
