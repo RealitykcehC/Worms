@@ -25,7 +25,7 @@ public class WorldTests {
 	private static final double EPS = Util.DEFAULT_EPSILON;
 	private static final double illegalRadius= 0.1;
 	private static final double illegalCoordinate = -1.0;
-	private static final String illegalTeamName= "testName";
+	private static final String illegalTeamName= "lowercase name";
 	@Before
 	public static void setup(){
 		/**	passable = 	- - - / / 
