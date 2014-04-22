@@ -100,7 +100,7 @@ public class WorldTests {
 		assertTrue(world.getTeams().size()==1)
 
 	}
-	@Test (expected == IllegalArgumentException)
+	@Test 
 	public void testAddEmtpyTeam_IllegalNameCase()
 		throws Exception{
 		
@@ -112,7 +112,7 @@ public class WorldTests {
 		
 		assertFalse(world.addEmtyTeam("He"));
 	}
-	@Test ()
+	@Test 
 	public void testAddEmptyTeam_IllegalTeamAmountCase()
 			throws Exception {
 		
@@ -201,13 +201,13 @@ public class WorldTests {
 		assertEquals(1, world.getFood().size());
 
 	}
-	@Test (impassable terrain)
+	@Test 
 	public void testCreatFood_IllegalTerrainCase() 
 			throws Exception{
 		world.createFood(1, 5);
 		assertFalse(world.getFood().size()==1); 
 	}
-	@Test (out of world bounds)
+	@Test 
 	public void testCreateFood_IllegalBoundCase()
 			throws Exception
 			{
