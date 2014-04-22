@@ -47,22 +47,25 @@ public class Worm {
 	 * Declaration of variables.
 	 */
 	public final double g = 9.80665;
-	private double x, y, direction, radius, mass;
 	public final double density = 1062.0;
-	private String name;
 	private static final double minimalRadius = .25;
 	private static final double lowerBoundMassExcluded = 0;
 	private static final double lowerBoundX = World.lowerBoundX;
 	private static final double upperBoundX = World.upperBoundX;
 	private static final double lowerBoundY = World.lowerBoundY;
 	private static final double upperBoundY = World.upperBoundY;
+	private double x, y, direction, radius, mass;
 	private int actionPoints, maxActionPoints;
 	private int hitPoints, maxHitPoints;
-	private ArrayList<Projectile> collectionOfWeapons = new ArrayList<Projectile>();
+	private int indexOfCurrentWeapon;
+	private boolean isTerminated = false;
+	private String name;
+	@SuppressWarnings("unused")
 	private Projectile projectile;
 	private Team team;
 	private World world;
-
+	private ArrayList<Projectile> collectionOfWeapons = new ArrayList<Projectile>();
+	
 	/**
 	 * Constructor of the class Worm with given x,y-coordinates (in meters), a
 	 * direction (expressed as an angle in radians), a radius (in meters) and a name.
@@ -142,6 +145,11 @@ public class Worm {
 		this.actionPoints = this.getMaxActionPoints();
 		this.hitPoints = this.getMaxHitPoints();
 		this.world = world;
+		this.initWeapons();
+	}
+	
+	public World getWorld() {
+		return this.world;
 	}
 
 	/**
@@ -216,24 +224,6 @@ public class Worm {
 	public String getName() {
 		return this.name;
 	}
-	/**
-	 * This method changes the name of given worm to a new valid name
-	 * 
-	 * @param	newName 	this.name equals newName if newName is valid
-	 * 
-	 * @post 	newName must be two characters long and starts with an uppercase letter.
-	 * 		newName can only use letters (upper- and lowercase), quotes (single and double),
-	 * 		numbers and spaces.
-	 */
-	@Basic 
-	public String setName (newName) throw IllegalArgumentException {
-		
-		if (!isValidName(newName)){
-			throw new IllegalArgumentException("!isValidName");
-		}
-		this.name == newName;
-		
-	}
 
 	/**
 	 * Function that returns the minimal radius of this worm.
@@ -256,6 +246,16 @@ public class Worm {
 	}
 
 	/**
+	 * Function that returns the maximum Action Points for this worm.
+	 * 
+	 * @return maxActionPoints
+	 * 			The maximum Action Points for this worm.
+	 */
+	public int getMaxActionPoints() {
+		return this.maxActionPoints;
+	}
+	
+	/**
 	 * Function which returns the current amount of Hit Points of this worm.
 	 * 
 	 * @return this.hitPoints
@@ -266,16 +266,6 @@ public class Worm {
 	}
 
 	/**
-	 * Function that returns the maximum Action Points for this worm.
-	 * 
-	 * @return maxActionPoints
-	 * 			The maximum Action Points for this worm.
-	 */
-	public int getMaxActionPoints() {
-		return this.maxActionPoints;
-	}
-
-	/**
 	 * Function which returns the maximum Hit Points for this worm.
 	 * 
 	 * @return this.maxHitPoints
@@ -283,6 +273,131 @@ public class Worm {
 	 */
 	public int getMaxHitPoints() {
 		return this.maxHitPoints;
+	}
+	
+	public double getTotalStepCostForMove(double angle) {
+		return Math.abs(Math.sin(angle) * 4) + Math.abs(Math.cos(angle));
+	}
+
+//	/**
+//	 * Function that returns the total cost of a step for a move.
+//	 * 
+//	 * @return Math.abs(Math.sin(this.getOrientation()) * 4) + Math.abs(Math.cos(this.getOrientation()))
+//	 * 			The total cost of a step for a move (according to the orientation of this worm).
+//	 */
+//	public double getTotalStepCost() {
+//		return Math.abs(Math.sin(this.getOrientation()) * 4)
+//				+ Math.abs(Math.cos(this.getOrientation()));
+//	}
+	
+	/**
+	 * Function that calculates the air-time of this worm when he jumps.
+	 * 
+	 * @param timeStep 
+	 * 			...
+	 * @return this.getJumpDistance() / (this.getInitialVelocity() * Math.cos(this.getOrientation()))
+	 * 			The time a worm's jump takes (air-time).
+	 */
+	// TODO
+	public double getJumpTime(double timeStep) {
+		double newX = 0, newY = 0;
+		double[] jumpStep = new double[2];
+		double totalJumpTime = 0;
+		do {
+			jumpStep = this.getJumpStep(totalJumpTime);
+			newX = jumpStep[0];
+			newY = jumpStep[1];
+			totalJumpTime += timeStep;
+		} while (this.getRadius() >= Math.sqrt(Math.pow(this.getX() - newX, 2)
+				+ Math.pow(this.getY() - newY, 2)));
+		// || !(isJumpFinished(newX, newY)));
+		// Starting methods call this method too often: program gets stuck.
+		return totalJumpTime;
+	}
+
+	/**
+	 * Function that gives the x,y-coordinates of this worm at a given moment t in the jump.
+	 * 
+	 * @param t 
+	 * 			The time for which the x,y-coordinates have to be calculated.
+	 * @return result
+	 * 			The array which holds the x,y-coordinates of this worm at time t in its jump.
+	 */
+	public double[] getJumpStep(double t) {
+		double initVelocityX = this.getInitialVelocity()
+				* Math.cos(this.getOrientation());
+		double initVelocityY = this.getInitialVelocity()
+				* Math.sin(this.getOrientation());
+		double Xt = this.getX() + (initVelocityX * t);
+		double Yt = this.getY()
+				+ ((initVelocityY * t) - (.5 * this.g * Math.pow(t, 2)));
+		double[] result = { Xt, Yt };
+		return result;
+	}
+	
+	/**
+	 * Function that calculates the force of this worm to make a jump.
+	 * 
+	 * @return (5 * this.getActionPoints()) + (mass * g)
+	 * 			The force of this worm to make a jump.
+	 */
+	public double getForce() throws ArithmeticException {
+		return (5 * this.getActionPoints()) + (this.getMass() * this.g);
+	}
+
+	/**
+	 * Function that calculates the initial velocity of the worm before he jumps.
+	 * 
+	 * @return (this.getForce() / mass) * .5
+	 * 			The initial velocity of the worm before he jumps.
+	 */
+	public double getInitialVelocity() throws ArithmeticException {
+		return (this.getForce() / this.getMass()) * .5;
+	}
+
+//	/**
+//	 * Function that calculates the distance this worm jumps.
+//	 * 
+//	 * @return (Math.pow(this.getInitialVelocity(), 2) * Math.sin(2 * this.getOrientation())) / g
+//	 * 			The distance this worm will jump.
+//	 */
+//	public double getJumpDistance() {
+//		return (Math.pow(this.getInitialVelocity(), 2) * Math.sin(2 * this
+//				.getOrientation())) / this.g;
+//	}
+	
+	/**
+	 * Function that returns the selected weapon of this worm (as a string, i.e. the name of the weapon).
+	 * 
+	 * @return "Rifle"
+	 * 			This function returns "Rifle" when the projectile this worm is using is an instance of
+	 * 			the class Rifle
+	 * @return "Bazooka"
+	 * 			This function returns "Bazooka" when the projectile this worm is using is an instance 
+	 * 			of the class Bazooka
+	 * @return null
+	 * 			No weapon is selected
+	 */
+	public String getSelectedWeapon() {
+		return this.getProjectile().getWeaponName();
+	}
+
+	/**
+	 * Function that returns the team name of this worm.
+	 * 
+	 * @return team.getTeamName()
+	 * 			This worm's team name
+	 */
+	public String getTeamName() {
+		try {
+			return this.team.getTeamName();
+		} catch (NullPointerException e) {
+			return null;
+		}
+	}
+	
+	public Projectile getProjectile() {
+		return this.collectionOfWeapons.get(this.indexOfCurrentWeapon);
 	}
 
 	/**
@@ -372,108 +487,104 @@ public class Worm {
 	public void setHitPoints(int newHitPoints) {
 		if (0 <= newHitPoints && newHitPoints <= this.getMaxHitPoints())
 			this.hitPoints = newHitPoints;
-		if (newHitPoints < 0)
+		if (newHitPoints < 0) {
 			this.hitPoints = 0;
+			this.terminate();
+		}
+	}
+	
+	public void setProjectile(Projectile newProjectile) {
+		this.projectile = newProjectile;
+	}
+	
+	/**
+	 * Function that gives back the angle's equal in the interval of [0, 2 * Math.PI[.
+	 * At first, the given angle has to be recalculated to a positive angle.
+	 * 
+	 * @param angle
+	 * 			The angle that needs to be recalculated.
+	 * @return angle % (2 * Math.PI)
+	 * 			The angle in the interval [0, 2 * Math.PI[, if it isn't already in it.
+	 */
+	public double recalculateAngle(double angle) {
+		assert (0 <= angle && angle < 2 * Math.PI);
+		while (angle < 0)
+			angle += (2 * Math.PI);
+		return angle % (2 * Math.PI);
+	}
+	
+	public void eatFood() {
+		ArrayList<Food> eatFood = new ArrayList<Food>();
+		for (Food checkFoodOverlaps : this.getWorld().getFood()) {
+			if (Math.sqrt(Math.pow((this.getX() - checkFoodOverlaps.getX()), 2)
+					+ Math.pow((this.getY() - checkFoodOverlaps.getY()), 2)) < this
+					.getRadius() + Food.radius)
+				eatFood.add(checkFoodOverlaps);
+		}
+		if (eatFood.size() > 0) {
+			for (Food eatThisFood : eatFood) {
+				this.setRadius(this.getRadius() + this.getRadius() * .1);
+				this.getWorld().removeFoodFromWorld(eatThisFood);
+			}
+		}
+	}
+	
+	/**
+	 * Function that adds a worm to this team.
+	 * 
+	 * @param team
+	 * 			The team to which this worm has to be added
+	 * @post	The provided worm has to be a part of this team
+	 * 			| (new this).teamMembers.contains(worm) == true
+	 * @throws	IllegalArgumentException
+	 * 			The team has to be a valid worm, i.e. it exists.
+	 * 			| team == null
+	 */
+	public void addToTeam(Team team) throws IllegalArgumentException {
+		if (team == null)
+			throw new IllegalArgumentException();
+		team.addTeamMember(this);
+	}
+	
+	/**
+	 * Method that selects the next weapon in the ArrayList of weapons.
+	 */
+	public void selectNextWeapon() {
+		this.indexOfCurrentWeapon = (this.collectionOfWeapons
+				.indexOf(this.getProjectile()) + 1) % this.collectionOfWeapons.size();
+		this.setProjectile(this.collectionOfWeapons.get(this.indexOfCurrentWeapon));
 	}
 
 	/**
-	 * Function that checks whether or not this worm can move a given number of steps in the direction this worm
-	 * is currently facing. The distance this worm travels per step is equal to the radius of this worm.
-	 * This worm also has to have enough action points to make this move. If he has too few of them, he cannot 
-	 * execute his move.
+	 * Function that checks whether or not this worm can move in the direction its currently facing.
+	 * For this to be possible, the worm has to have sufficient Action Points left to execute the 
+	 * move and it also has to be facing in a direction in which the worm is able to move (i.e. it is
+	 * not facing to any impassable terrain).
 	 * 
-	 * @param nbSteps
-	 * 			The number of steps that have to be taken.
 	 * @return false
 	 * 			The move cannot be made.
 	 * @return true
 	 * 			The move can be made.
 	 */
 	public boolean canMove() {
-		return (this.getActionPoints() >= (int) Math.ceil(getTotalStepCost()));
+		double[] result = this.moveEvaluation();
+		return (result[2] == 1 || result[2] == 2);
 	}
 
 	/**
-	 * Function that executes a move.
-	 * A move consists of the following:
-	 * This worm has to be moved over a certain distance (= number of steps * radius of this worm).
-	 * This worm has to have enough action points to execute his move.
-	 *
-	 * @post	The x-coordinate of this worm has to be updated, if this is possible.
-	 * 			| (new this).getX() == this.getX() + (nbSteps * Math.cos(this.getOrientation()) * this.getRadius())
-	 * @post	The y-coordinate of this worm has to be updated, if this is possible..
-	 * 			| (new this).getY() == this.getY() + (nbSteps * Math.sin(this.getOrientation()) * this.getRadius())
-	 * @post	The current amount of Action Points have to be updated. This will anly be executed when the new x,y-coordinates are both valid.
-	 * 			| (new this).getActionPoints() == this.getActionPoints() - ((int) Math.ceil(nbSteps * this.getTotalStepCost()))
+	 * Function that executes the move of this worm, if it is allowed to (is able to) move.
 	 */
-	public void move() throws IllegalArgumentException, ArithmeticException {
-		double divergenceSample = .7875;
-		double angleStepSize = .0175;
-		double distanceStepSize = .01;
-		double[][] maxDistanceToAdjacent = new double[(int) Math.ceil(2 * (divergenceSample / angleStepSize) + 1)][4];
-		int counter = 0;
-		for (double angle = this.getOrientation() - divergenceSample; angle <= this.getOrientation() + divergenceSample; angle += angleStepSize){
-			maxDistanceToAdjacent[counter][0] = angle;
-			maxDistanceToAdjacent[counter][3] = 1;
-			for (double distance = .1; distance <= this.getRadius(); distance += distanceStepSize){
-				double newX = this.getX() + Math.cos(angle) * distance;
-				double newY = this.getY() + Math.sin(angle) * distance;
-				if (this.getWorld().isImpassable(newX, newY, this.getRadius())) {
-					maxDistanceToAdjacent[counter][2] = 1;
-					maxDistanceToAdjacent[counter][3] = 0;
-					break;
-				}
-				if (this.getWorld().isAdjacent(newX, newY, this.getRadius())) {
-					maxDistanceToAdjacent[counter][1] = distance;
-					maxDistanceToAdjacent[counter][3] = 0;
-				}
-			}
-			counter++;
-		}
-		// Verify whether move is impossible, because of being impassable in all directions.
-		boolean impassable = true;
-		for (int i = 0; i < maxDistanceToAdjacent.length; i++) {
-			if (maxDistanceToAdjacent[i][2] == 0) {
-				impassable = false;
-			}
-		}
-		if (impassable)
-			return;
-		// Verify whether move of this worm is passable, but not adjacent in all directions.
-		boolean passable = true;
-		for (int i = 0; i < maxDistanceToAdjacent.length; i++) {
-			if (maxDistanceToAdjacent[i][3] == 0) {
-				passable = false;
-			}
-		}
-		if (passable) {
-			// TODO Implement fall.
-			return;
-		}
-		// Calculate new position in case of adjacent.
-		double maxDistance = maxDistanceToAdjacent[0][1];
-		double maxDistAngle = maxDistanceToAdjacent[0][0];
-		for (int i = 1; i < maxDistanceToAdjacent.length; i++) {
-			if (maxDistanceToAdjacent[i][1] > maxDistance) {
-				maxDistance = maxDistanceToAdjacent[i][1];
-				maxDistAngle = maxDistanceToAdjacent[i][0];
-			} else if (maxDistanceToAdjacent[i][1] == maxDistance) {
-				if (Math.abs(this.getOrientation() - maxDistanceToAdjacent[i][0]) < Math.abs(this.getOrientation() - maxDistAngle))
-					maxDistAngle = maxDistanceToAdjacent[i][0];
-			}
-		}
-		// TODO The move.
-	}
-
-	/**
-	 * Function that returns the total cost of a step for a move.
-	 * 
-	 * @return Math.abs(Math.sin(this.getOrientation()) * 4) + Math.abs(Math.cos(this.getOrientation()))
-	 * 			The total cost of a step for a move (according to the orientation of this worm).
-	 */
-	public double getTotalStepCost() {
-		return Math.abs(Math.sin(this.getOrientation()) * 4)
-				+ Math.abs(Math.cos(this.getOrientation()));
+	public void move() throws RuntimeException {
+		if (!this.canMove())
+			throw new RuntimeException();
+		double[] moveEval = this.moveEvaluation();
+		this.x = this.getX() + moveEval[1] * Math.cos(moveEval[0]);
+		this.y = this.getY() + moveEval[1] * Math.sin(moveEval[0]);
+		this.setActionPoints(this.getActionPoints()
+				- (int) Math.ceil(this.getTotalStepCostForMove(moveEval[0])));
+		if (moveEval[2] == 2)
+			this.fall();
+		this.eatFood();
 	}
 
 	/**
@@ -519,21 +630,26 @@ public class Worm {
 	}
 
 	/**
-	 * Function that gives back the angle's equal in the interval of [0, 2 * Math.PI[.
-	 * At first, the given angle has to be recalculated to a positive angle.
+	 * Function that returns whether or not this worm can jump or not.
+	 * Function that checks whether or not the worm's orientation is an element of [0, Math.PI].
 	 * 
-	 * @param angle
-	 * 			The angle that needs to be recalculated.
-	 * @return angle % (2 * Math.PI)
-	 * 			The angle in the interval [0, 2 * Math.PI[, if it isn't already in it.
+	 * @return true
+	 * 			The condition for this worm to make a jump, is fulfilled (Math.sin(this.getOrientation()) has to be greater than 0, i.e. quadrants I and II).
+	 * @return false
+	 * 			The condition for this worm to make a jump, is not fulfilled.
 	 */
-	public double recalculateAngle(double angle) {
-		assert (0 <= angle && angle < 2 * Math.PI);
-		while (angle < 0)
-			angle += (2 * Math.PI);
-		return angle % (2 * Math.PI);
+	public boolean canJump() {
+		if (this.getActionPoints() <= 0)
+			return false;
+		if (this.getWorld().isImpassable(this.getX(), this.getY(),
+				this.getRadius()))
+			return false;
+//		if (Math.sin(this.getOrientation()) < 0)
+//			return false;
+		return true;
 	}
-
+	
+	
 	/**
 	 * Function that makes this worm jump in the direction he's currently facing.
 	 * The worm has to have some action points left, otherwise he cannot make the jump.
@@ -554,110 +670,90 @@ public class Worm {
 	 * 			| !isValid(this.getX() + getJumpDistance())
 	 */
 	public void jump(double timeStep) throws ArithmeticException {
+//		double newX = 0, newY = 0;
+//		double oldX = this.getX(), oldY = this.getY();
+		double[] jumpStep = new double[2];
+//		double totalJumpTime = 0;
 		if (!canJump())
 			throw new ArithmeticException();
-		if (!isValidX(this.x + getJumpDistance()))
+//		do {
+//			jumpStep = this.getJumpStep(totalJumpTime);
+//			newX = jumpStep[0];
+//			newY = jumpStep[1];
+//			totalJumpTime += timeStep;
+//		} while (this.getRadius() >= Math.sqrt(Math.pow(oldX - newX, 2)
+//				+ Math.pow(oldY - newY, 2)) || !(isJumpFinished(newX, newY))); // || !(isJumpFinished(newX, newY))
+		jumpStep = this.getJumpStep(this.getJumpTime(timeStep));
+		if (!isValidX(jumpStep[0]) || !isValidY(jumpStep[1]))
 			throw new ArithmeticException();
-		this.x += getJumpDistance();
+		this.x = jumpStep[0];
+		this.y = jumpStep[1];
 		this.actionPoints = 0;
+		this.eatFood();
 	}
-
+	
 	/**
-	 * Function that makes this worm jump in the direction he's currently facing.
-	 * The worm has to have some action points left, otherwise he cannot make the jump.
-	 * All action points are being consumed when a jump is executed.
-	 * This worm cannot be facing downwards when jumping.
-	 * 	The location of the worm can't be Impassable
+	 * Method that checks whether or not this worm can fall.
 	 * 
 	 * @return true
-	 * 			The condition for this worm to make a jump, is fulfilled (Math.sin(this.getOrientation()) has to be greater than 0, i.e. quadrants I and II).
-	 * 		
-	 * 
+	 * 			This worm can fall
 	 * @return false
-	 * 			The condition for this worm to make a jump, is not fulfilled.
+	 * 			This worm can't fall
 	 */
-	public boolean canJump() {
-		
-		return ((Math.sin(this.getOrientation()) > 0)&&(!(this.getWorld().isImpassable(this.getX(), this.getY(), this.getRadius()))
-				&& (this.actionPoints>=0));
+	public boolean canFall() {
+		return !(this.getWorld().isAdjacent(this.getX(), this.getY(),
+				this.getRadius()));
 	}
 
 	/**
-	 * Function that calculates the air-time of this worm when he jumps.
-	 * 
-	 * @param timeStep 
-	 * 			...
-	 * @return this.getJumpDistance() / (this.getInitialVelocity() * Math.cos(this.getOrientation()))
-	 * 			The time a worm's jump takes (air-time).
+	 * Method that makes this worm fall down, until it hits some impassable terrain.
 	 */
-	// TODO
-	public double getJumpTime(double timeStep) {
-		return this.getJumpDistance()
-				/ (this.getInitialVelocity() * Math.cos(this.getOrientation()));
+	public void fall() {
+		if (this.canFall()) {
+			double oldY = this.y;
+			while (!this.getWorld().isAdjacent(this.getX(), this.getY(),
+					this.getRadius())) {
+				this.y -= Util.DEFAULT_EPSILON;
+				if (!(0.0 <= this.getY() && this.getY() <= this.getWorld()
+						.getHeight())) {
+					this.terminate();
+					return;
+				}
+			}
+			this.hitPoints -= 3 * (int) Math.floor(oldY - this.getY());
+		}
+		this.eatFood();
 	}
-
-	/**
-	 * Function that gives the x,y-coordinates of this worm at a given moment t in the jump.
-	 * 
-	 * @param t 
-	 * 			The time for which the x,y-coordinates have to be calculated.
-	 * @return result
-	 * 			The array which holds the x,y-coordinates of this worm at time t in its jump.
-	 */
-	public double[] getJumpStep(double t) {
-		double initVelocityX = this.getInitialVelocity()
-				* Math.cos(this.getOrientation());
-		double initVelocityY = this.getInitialVelocity()
-				* Math.sin(this.getOrientation());
-		double Xt = this.getX() + (initVelocityX * t);
-		double Yt = this.getY()
-				+ ((initVelocityY * t) - (.5 * this.g * Math.pow(t, 2)));
-		double[] result = { Xt, Yt };
-		return result;
+	
+	public boolean canShoot() {
+		if (this.getActionPoints() >= this.getProjectile().getActionPointsCost()
+				&& !(this.getWorld().isImpassable(this.getX(), this.getY(),
+						this.getRadius())))
+			return true;
+		return false;
 	}
-
+	
 	/**
-	 * Function that returns whether or not this worm can jump or not.
-	 * Function that checks whether or not the worm's orientation is an element of [0, Math.PI].
+	 * Method that makes this worm shoot.
 	 * 
-	 * @return true
-	 * 			The condition for this worm to make a jump, is fulfilled (Math.sin(this.getOrientation()) has to be greater than 0, i.e. quadrants I and II).
-	 * @return false
-	 * 			The condition for this worm to make a jump, is not fulfilled.
+	 * @param yield
+	 * 			The yield with which this worm fires the weapon.
 	 */
-	public boolean canJump() {
-		return (Math.sin(this.getOrientation()) > 0);
-	}
-
-	/**
-	 * Function that calculates the force of this worm to make a jump.
-	 * 
-	 * @return (5 * this.getActionPoints()) + (mass * g)
-	 * 			The force of this worm to make a jump.
-	 */
-	public double getForce() throws ArithmeticException {
-		return (5 * this.getActionPoints()) + (this.getMass() * this.g);
-	}
-
-	/**
-	 * Function that calculates the initial velocity of the worm before he jumps.
-	 * 
-	 * @return (this.getForce() / mass) * .5
-	 * 			The initial velocity of the worm before he jumps.
-	 */
-	public double getInitialVelocity() throws ArithmeticException {
-		return (this.getForce() / this.getMass()) * .5;
-	}
-
-	/**
-	 * Function that calculates the distance this worm jumps.
-	 * 
-	 * @return (Math.pow(this.getInitialVelocity(), 2) * Math.sin(2 * this.getOrientation())) / g
-	 * 			The distance this worm will jump.
-	 */
-	public double getJumpDistance() {
-		return (Math.pow(this.getInitialVelocity(), 2) * Math.sin(2 * this
-				.getOrientation())) / this.g;
+	public void shoot(int yield) {
+		if (!(0 <= yield && yield <= 100))
+			throw new IllegalArgumentException("Yield is out of bounds");
+		this.getProjectile().setForce(yield);
+		if (!canShoot())
+			throw new ArithmeticException("Action Points are out of bounds");
+		while (canShoot()) {
+			this.getProjectile().setX(this.getX() + Math.cos(this.getOrientation())
+					* this.getRadius());
+			this.getProjectile().setY(this.getY() + Math.sin(this.getOrientation())
+					* this.getRadius());
+		}
+		this.getProjectile().jump(.0001); // timeStep from jump.
+		this.setActionPoints(this.getActionPoints()
+				- this.getProjectile().getActionPointsCost());
 	}
 
 	/**
@@ -765,19 +861,7 @@ public class Worm {
 			return radius > minimalRadius;
 		return false;
 	}
-
-	/**
-	 * Function that checks whether or not this worm is still alive or not.
-	 * 
-	 * @return true
-	 * 			This worm is still alive.
-	 * @return false
-	 * 			This worm is dead.
-	 */
-	public boolean isAlive() {
-		return (this.getHitPoints() > 0);
-	}
-
+	
 	/**
 	 * Function that terminates this worm (i.e. he died).
 	 * Everything related to this worm will be deleted.
@@ -789,8 +873,32 @@ public class Worm {
 	 * 			|	(new this).getActionPoints() == 0 && (new this).getMaxActionPoints() == 0 && (new this).getHitPoints() == 0 && (new this).getMaxHitPoints() == 0 && 
 	 * 			|		(new this).getRadius() == 0 && (new this).getMass == 0 && (new this).getName() == null
 	 */
-	public Worm terminate() {
-		return null;
+	public void terminate() {
+		for (Projectile weapon : this.collectionOfWeapons) {
+			weapon.terminate();
+			this.collectionOfWeapons.remove(weapon);
+		}
+		this.getProjectile().terminate();
+		this.setProjectile(null);
+		this.team = null;
+		this.world = null;
+		this.isTerminated = true;
+	}
+
+	public boolean isTerminated() {
+		return this.isTerminated;
+	}
+	
+	/**
+	 * Function that checks whether or not this worm is still alive or not.
+	 * 
+	 * @return true
+	 * 			This worm is still alive.
+	 * @return false
+	 * 			This worm is dead.
+	 */
+	public boolean isAlive() {
+		return (this.getHitPoints() > 0 && !this.isTerminated());
 	}
 
 	/**
@@ -814,6 +922,15 @@ public class Worm {
 		this.mass = this.density
 				* ((4.0 / 3.0) * Math.PI * Math.pow(newRadius, 3));
 		this.setMaxActionPoints(this.getMass());
+		this.setMaxHitPoints(this.getMass());
+	}
+
+	private void setMaxHitPoints(double newMass) {
+		if ((int) Math.round(newMass) >= 0) {
+			this.maxHitPoints = (int) Math.round(mass);
+			this.hitPoints = Math.min(this.getMaxHitPoints(),
+					this.getHitPoints());
+		}
 	}
 
 	/**
@@ -830,143 +947,163 @@ public class Worm {
 	 * 			| (new this).getActionPoints() == Math.min(this.getActionPoints(), this.getMaxActionPoints())
 	 */
 	private void setMaxActionPoints(double mass) {
-		if (Math.round(mass) >= 0) {
+		if ((int) Math.round(mass) >= 0) {
 			this.maxActionPoints = (int) Math.round(mass);
 			this.actionPoints = Math.min(this.getMaxActionPoints(),
 					this.getActionPoints());
 		}
 	}
-
-	public World getWorld() {
-		return this.world;
-	}
-
-	/**
-	 * Method that checks whether or not this worm can fall.
-	 * 
-	 * @return true
-	 * 			This worm can fall
-	 * @return false
-	 * 			This worm can't fall
-	 */
-	public boolean canFall() {
-		return !(this.getWorld().isAdjacent(this.getX(), this.getY(),
-				this.getRadius()));
-	}
-
-	/**
-	 * Method that makes this worm fall down, until it hits some impassable terrain.
-	 */
-	public void fall() {
-		if (this.canFall()) {
-			double oldY = this.y;
-			while (!this.getWorld().isAdjacent(this.getX(), this.getY(),
-					this.getRadius())) {
-				this.y -= Util.DEFAULT_EPSILON;
-				if (!(0.0 <= this.getY() && this.getY() <= this.getWorld()
-						.getHeight())) {
-					this.terminate();
-					return;
-				}
-			}
-			this.hitPoints -= 3 * (int) Math.floor(oldY - this.y);
-		}
-	}
-
-	/**
-	 * Function that returns the selected weapon of this worm (as a string, i.e. the name of the weapon).
-	 * 
-	 * @return "Rifle"
-	 * 			This function returns "Rifle" when the projectile this worm is using is an instance of
-	 * 			the class Rifle
-	 * @return "Bazooka"
-	 * 			This function returns "Bazooka" when the projectile this worm is using is an instance 
-	 * 			of the class Bazooka
-	 * @return null
-	 * 			No weapon is selected
-	 */
-	public String getSelectedWeapon() {
-		return projectile.getWeaponName();
-	}
-
-	/**
-	 * Function that returns the team name of this worm.
-	 * 
-	 * @return team.getTeamName()
-	 * 			This worm's team name
-	 */
-	public String getTeamName() {
-		try {
-			return this.team.getTeamName();
-		} catch (NullPointerException e) {
-			return null;
-		}
-	}
-
-	/**
-	 * Method that selects the next weapon in the ArrayList of weapons.
-	 */
-	public void selectNextWeapon() {
-		this.collectionOfWeapons.get((this.collectionOfWeapons
-				.indexOf(this.projectile) + 1)
-				% this.collectionOfWeapons.size());
-	}
-
-	/**
-	 * Method that makes this worm shoot.
-	 * 
-	 * @param yield
-	 * 			The yield with which this worm fires the weapon.
-	 */
-	public void shoot(int yield) {
-		if (!isValidYield(yield))
-			throw new IllegalArgumentException("Yield is out of bound");
-		if (!canShoot())
-			throw new ArithmeticException("actionpoints are out of bound");
-		while(canShoot())
-			this.projectile.setX(this.getX());
-			this.projectile.setY(this.getY());
-			this.projectile.jump();
-			if (this.projectile.hit())
-		
-		this.setActionPoints(this.getActionPoints()- projectile.getActionPointsCost());
-	}
 	
-	public boolean canShoot(){
-		if(this.getActionPoints() >= this.projectile.getActionPointsCost() && !(this.getWorld().isAdjacent(projectile.getX(), projectile.getY(), projectile.getRadius())))
-				return true;
-		return false;
-	}
-	
-	public boolean isValidYield(int yield){
-		return (0 <= yield && yield <= 100);
-		
-	}
-
 	/**
 	 * Method which initializes the weapon collection of this worm. It also sets the standard weapon
 	 * of this worm to the first weapon in the collection.
 	 */
-	public void initWeapons() {
+	private void initWeapons() {
 		this.collectionOfWeapons.add(new Rifle(this));
 		this.collectionOfWeapons.add(new Bazooka(this));
-		this.projectile = this.collectionOfWeapons.get(0);
+		this.setProjectile(this.collectionOfWeapons.get(0));
+		this.indexOfCurrentWeapon = 0;
 	}
 	
 	/**
-	 * Function that adds a worm to this team.
+	 * Function that checks all aspects to the worms location for all possible ending points.
+	 * It returns a summary array, which contains the information for this worm that describes 
+	 * all possible outcomes of the move this worm can make.
 	 * 
-	 * @param team
-	 * 			The team to which this worm has to be added
-	 * @post	The provided worm has to be a part of this team
-	 * 			| (new this).teamMembers.contains(worm) == true
-	 * @throws	IllegalArgumentException
-	 * 			The team has to be a valid worm, i.e. it exists.
-	 * 			| team == null
+	 * @return sampleMatrixSummary
+	 * 			An array containing all information about the possible outcomes of this worm's move 
 	 */
-	public void addToTeam(Team team) throws IllegalArgumentException {
-		if (team == null)
-			throw new IllegalArgumentException();
-		team.addTeamMember(this);
+	private double[] moveEvaluation() {
+		double divergenceSample = .7875;
+		double angleStepSize = .0175;
+		double distanceStepSize = .01;
+		int maxCounter = (int) Math
+				.ceil(2 * (divergenceSample / angleStepSize) + 1);
+		double[][] sampleMatrix = new double[maxCounter][5];
+		// sampleMatrix[][0] is for storing the angle.
+		// sampleMatrix[][1] is for storing whether or not the actual
+		// Action Points of this worm are sufficient to execute the move at the
+		// angle
+		// (0 == enough Action Points available, 1 == insufficient Action Points
+		// available).
+		// sampleMatrix[][2] is for storing whether or not (1 == true, 0 ==
+		// false) the move always gets in impassable terrain for an angle.
+		// sampleMatrix[][3] is for storing whether or not (1 == true, 0 ==
+		// false) the move always gets in passable terrain for an angle.
+		// sampleMatrix[][4] is for storing the largest distance found to
+		// travel for an angle (standard: adjacent to impassable terrain,
+		// but still passable).
+		double[] sampleMatrixSummary = new double[3];
+		// sampleMatrixSummary collects the consolidated information for
+		// all angles of sampleMatrix.
+		// sampleMatrixSummary[2] is 1 if this worm can move in adjacent area.
+		// sampleMatrixSummary[2] is 2 of this worm can move in passable area
+		// and should fall.
+		// sampleMatrixSummary[2] is 3 if this worm can't move (impassable or
+		// not enough AP).
+		for (int counter = 0; counter < maxCounter; counter++) {
+			double angle = this.getOrientation() - divergenceSample + counter
+					* angleStepSize;
+			sampleMatrix[counter][0] = angle;
+			if (this.getActionPoints() < this.getTotalStepCostForMove(angle)) {
+				sampleMatrix[counter][1] = 1; // Not enough Action Points
+												// available.
+				continue;
+			}
+			if (this.getWorld().isImpassable(
+					this.getX() + Math.cos(angle) * .1,
+					this.getY() + Math.sin(angle) * .1, this.getRadius())) {
+				sampleMatrix[counter][2] = 1;
+				continue;
+			}
+			for (double distance = .1; distance <= this.getRadius(); distance += distanceStepSize) {
+				double newX = this.getX() + Math.cos(angle) * distance;
+				double newY = this.getY() + Math.sin(angle) * distance;
+				if (this.getWorld().isAdjacent(newX, newY, this.getRadius())) {
+					sampleMatrix[counter][4] = distance;
+					sampleMatrix[counter][3] = 0;
+				} else if (this.getWorld().isPassable(newX, newY,
+						this.getRadius())) {
+					// sampleMatrix[counter][4] = distance;
+					sampleMatrix[counter][3] = 1;
+				}
+			}
+			// System.out.println("Counter: " + counter + " | Angle: " +
+			// sampleMatrix[counter][0] + " | AP: " + sampleMatrix[counter][1] +
+			// " | Imp: " + sampleMatrix[counter][2] + " | Pass: " +
+			// sampleMatrix[counter][3] + " | Distance: " +
+			// sampleMatrix[counter][4]);
+		}
+		sampleMatrixSummary[0] = 0;
+		sampleMatrixSummary[1] = 0;
+		sampleMatrixSummary[2] = 0;
+		boolean verifyAP = true;
+		// Verify whether the move is impossible, because of insufficient AP
+		// available.
+		for (int counter = 0; counter < maxCounter; counter++) {
+			if (sampleMatrix[counter][1] == 0) {
+				verifyAP = false;
+				break;
+			}
+		}
+		if (verifyAP) {
+			sampleMatrixSummary[2] = 3;
+			return sampleMatrixSummary;
+		}
+		// Verify whether the move is impossible, because of being impassable in
+		// all
+		// directions.
+		boolean verifyImp = true;
+		for (int counter = 0; counter < maxCounter; counter++) {
+			if (sampleMatrix[counter][2] == 0) {
+				verifyImp = false;
+				break;
+			}
+		}
+		if (verifyImp) {
+			sampleMatrixSummary[2] = 3;
+			return sampleMatrixSummary;
+		}
+		// Verify whether move of this worm is passable, but not adjacent in all
+		// directions.
+		boolean verifyPass = true;
+		for (int counter = 0; counter < maxCounter; counter++) {
+			if (sampleMatrix[counter][3] == 0) {
+				verifyPass = false;
+				break;
+			}
+		}
+		if (verifyPass) {
+			sampleMatrixSummary[0] = this.getOrientation();
+			sampleMatrixSummary[1] = this.getRadius();
+			sampleMatrixSummary[2] = 2;
+			return sampleMatrixSummary;
+		}
+		// Calculate new position in case of adjacent.
+		sampleMatrixSummary[0] = sampleMatrix[0][0];
+		sampleMatrixSummary[1] = 0;
+		for (int counter = 0; counter < maxCounter; counter++) {
+			if (sampleMatrix[counter][1] == 1 || sampleMatrix[counter][2] == 1
+					|| sampleMatrix[counter][3] == 1)
+				continue;
+			if (sampleMatrix[counter][4] > sampleMatrixSummary[1]) {
+				sampleMatrixSummary[1] = sampleMatrix[counter][4];
+				sampleMatrixSummary[0] = sampleMatrix[counter][0];
+			} else if (sampleMatrix[counter][4] == sampleMatrixSummary[1]) {
+				if (Math.abs(this.getOrientation() - sampleMatrix[counter][0]) < Math
+						.abs(this.getOrientation() - sampleMatrixSummary[0]))
+					sampleMatrixSummary[0] = sampleMatrix[counter][0];
+			}
+		}
+		sampleMatrixSummary[2] = 1;
+		return sampleMatrixSummary;
+	}
+	
+	private boolean isJumpFinished(double newX, double newY) {
+		boolean wormLiesInWorld = this.getWorld().liesInWorld(newX, newY,
+				this.getRadius());
+		boolean wormHitsAdjTerrain = this.getWorld().isAdjacent(newX, newY,
+				this.getRadius());
+		return (!wormLiesInWorld && wormHitsAdjTerrain);
 	}
 }
