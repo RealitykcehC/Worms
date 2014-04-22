@@ -196,7 +196,8 @@ public class WorldTests {
 	}
 	@Test
 	public void testStartGame_LegalCase{
-		world.createWorm(1.0, 1.0, 1, 1.0, "Test");
+		world.createWorm(1.0, 1.0, 1, 1.0, "Test1");
+		world.createWorm(1.0, 1.0, 1, 1.0, "Test1");
 		world.startGame();
 		assertsame(collectionOfWorms()[0], world.getCurrentWorm());
 		assertEquals(true, world.isStarted);
@@ -273,7 +274,7 @@ public class WorldTests {
 			throws Exception{
 		
 		world.createWorm(0.0, 0.0, 0.0, illegalRadius, "Test");
-		assertFalse(["Invalid Radius"]1 == world.getWorms().size());
+		assertFalse(["Invalid Radius"],1 == world.getWorms().size());
 
 	}
 	@Test
