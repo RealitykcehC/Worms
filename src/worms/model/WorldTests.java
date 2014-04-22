@@ -8,6 +8,9 @@ import org.junit.Test;
 
 import worms.model.World;
 import worms.model.Worm;
+import worms.model.Food;
+import worms.model.Projectile.*;
+
 /**
  * A Junit testsuite to test all public methods of the class world 
  * 
@@ -30,6 +33,7 @@ public class WorldTests {
 					- - - / /		*/
 		boolean [][] passable = {[{true,true,true, false, false},{true, true, true, false, false},{true,true,true, false, false}};
 		World world = new World(5,5, passable, Random random);
+		
 	}
 	@After
 	public void Breakdown(){
@@ -47,14 +51,14 @@ public class WorldTests {
 		
 		assertTrue(world.isValidWidth(world.getWidth()));
 		world= new World(0, 0);
-
+		assertTrue(world.isValidWidth(world.getWidth()));
 	}
-	@Test 
+	@Test (expected = IllegalAmountException.class)
 	public void testIsValidWidth_IllegalCase()
 		throws Exception{
 		
 		World testWorld = new World(illegalCoordinate,illegalCoordinate-9);
-		assertFalse(testWorld.isValidWidth(testWorld.getWidth()));
+		assertFalse(["Width is invalid, out of the world bounds"],testWorld.isValidWidth(testWorld.getWidth()));
 	}
 	@Test
 	public void testIsValidHeight_LegalCase() {
@@ -63,12 +67,12 @@ public class WorldTests {
 		world= new World(0,0);
 		assertTrue(world.isValidHeight(world.getheight));
 	}
-	@Test
+	@Test (expected = IllegalAmountException.class)
 	public void testIsValidHeight_IllegalCase()
 		throws Exception{
 		
 		World testWorld = new World (illegalCoordinate, illegalCoordinate-9;
-		assertFalse(testWorld.isValidWidth(testWorld.getHeight()))
+		assertFalse(["Height is invalid, out of the world bounds"],testWorld.isValidHeight(testWorld.getHeight()))
 	}
 	@Test
 	public void testGetWidth() {
@@ -95,24 +99,24 @@ public class WorldTests {
 	}
 	@Test
 	public void testAddEmptyTeam_LegalNameCase() {
-		
+		// 
 		assertTrue(world.addEmtyTeam("This Testname is 4 shame' but legal"));
-		assertTrue(world.getTeams().size()==1)
+		assertTrue(["name is valid for uppercase letters, punctuation and numbers"], world.getTeams().size()==1)
 
 	}
-	@Test 
+	@Test (expected = IllegalArgumentException.class)
 	public void testAddEmtpyTeam_IllegalNameCase()
 		throws Exception{
 		world.addEmptyTeam(illegalTeamName);
-		assertFalse(world.getTeams().size()==1);
+		assertFalse(["The name is invalid"],world.getTeams().size()==1);
 	}
-	@Test 
+	@Test (expected = (expected = IllegalArgumentException)
 	public void testAddEmptyTeam_IllegalAmountCharNameCase()
 		throws Exception{
 		world.addEmtyTeam("H");
-		assertFalse(world.getTeams().size()==1);
+		assertFalse(["The name is invalid, insufficient chars"],world.getTeams().size()==1);
 	}
-	@Test 
+	@Test (expected = IllegalAmountException.class)
 	public void testAddEmptyTeam_IllegalTeamAmountCase()
 			throws Exception {
 		
@@ -120,12 +124,14 @@ public class WorldTests {
 			
 			world.addEmptyTeam("LegalTestname");
 		}
-		assertFalse(world.getTeams().size()==11);
+		assertFalse(["The amount of teams are invalid"],world.getTeams().size()==11);
 	}
 
 	@Test
 	public void testGetActiveProjectile() {
-
+		world.createWorm(1, 1, 1, 1, "Test");
+		
+		assertEquals(world.getCurrentWorm().getProjectileworm.getProjectile();
 	}
 	@Test
 	public void testRemoveFoodFromWorld() {
@@ -164,7 +170,7 @@ public class WorldTests {
 	@Test
 	public void testGetWorms() {
 		world.addEmptyTeam("Test");
-		assertEquals(1, world.getTeams());
+		assertEquals(1, world.getTeams().size());
 	}
 	@Test
 	public void testGetObjectsInWorld() {
@@ -172,7 +178,7 @@ public class WorldTests {
 		world.addFoodToWorld();
 		world.addWormToWorld();
 		world.addEmptyTeam();
-		assertTrue(world.getObjectsInWorld().size() == 3);
+		assertEquals(3, world.getObjectsInWorld().size());
 	}
 	@Test
 	public void testCalculateLocationStatus_LegalCases() {
@@ -181,6 +187,10 @@ public class WorldTests {
 		assertEquals(world.isImpassable, world.calculateLocationStatus(1, 5, 0.25));
 		assertEquals(world.isAdjacent, world.calculateLocationStatus(1, 3, 0.95));
 		assertEquals(world.isPassable, world.calculateLocationStatus(1, 1, 0.25));
+		assertEquals(!world.isImpassable, world.calculateLocationStatus(1, 1, 0.25);
+		assertEquals(!world.isAdjacent, world.calculateLocationStatus(1, 1, 0.25);
+		assertEquals(!world.isAdjacent, world.calculateLocationStatus(1, 5, 0.25);
+		assertEquals(!world.isPassable, world.calculateLocationStatus(1, 5, 0.25);
 	}
 	@Test
 	public void testStartNextTurn() {
@@ -191,7 +201,9 @@ public class WorldTests {
 	public void testGetTeams() {
 		world.addEmptyTeam("Hey");
 		world.addEmptyTeam("Hela");
-		assertEquals(2, world.getTeams().size());
+		world.addEmptyTeam();
+		
+		assertEquals(3, world.getTeams().size());
 	}
 
 	@Test
@@ -201,13 +213,13 @@ public class WorldTests {
 		assertEquals(1, world.getFood().size());
 
 	}
-	@Test 
+	@Test (expected = IllegalArgumentException)
 	public void testCreatFood_IllegalTerrainCase() 
 			throws Exception{
 		world.createFood(1, 5);
 		assertFalse(world.getFood().size()==1); 
 	}
-	@Test 
+	@Test (expected = IllegalArgumentException)
 	public void testCreateFood_IllegalBoundCase()
 			throws Exception
 			{
@@ -221,28 +233,28 @@ public class WorldTests {
 		world.createWorm(0, 0, 0, 0.25, "Test");
 		assertEquals(world.getWorms().size() == 2)
 	}
-	@Test
+	@Test (expected = IllegalArgumentException)
 	public void testCreateWorm_IllegalTerrainCase()
 			throws Exception
 			{
 		world.createWorm(1, 5, 0, 0.25, "Test");
 		assertFalse(world.getWorms().size()== 1);
 			}
-	@Test
+	@Test (expected = IllegalArgumentException)
 	public void testCreateWorm_OutOfWorldBoundsCase()
 			throws Exception
 			{
 		world.createWorm(illegalCoordinate, illegalCoordinate, 0, 0.25, "Test");
 		assertFalse(world.getWorms().size()== 1);
 			}
-	@Test
+	@Test (expected = IllegalArgumentException)
 	public void testCreateWorm_IllegalNameCase()
 			throws Exception{
 		
 		world.createWorm(0, 0, 0, 0.25, illegalTeamName);
 		assertFalse(1 == world.getWorms().size());
 			}
-	@Test
+	@Test (expected = IllegalArgumentException)
 	public void testCreateWorm_IllegalRadiusCase()
 			throws Exception{
 		
@@ -256,19 +268,19 @@ public class WorldTests {
 		assertTrue(world.liesInWorld(1, 2, 0.25));
 		assertTrue(world.liesInWorld(0, 2, 0.25));
 	}
-	@Test
+	@Test(expected = IllegalArgumentException)
 	public void testLiesInWorld_IllegalOutOfBoundCase()
 			throws Exception{
 		
 		assertFalse(world.liesInWorld(illegalCoordinate, illegalCoordinate, 0.25));
 	}
-	@Test
+	@Test (expected = IllegalArgumentException)
 	public void testLiesInWorld_IllegalTerrainCase()
 			throws Exception{
 		
 		assertFalse(world.liesInWorld(1, 4, 0.25));
 	}
-	@Test 
+	@Test (expected = IllegalArgumentException)
 	public void testLiesInWorld_IllegalRadiusCase()
 			throws Exception{
 				
