@@ -9,12 +9,12 @@ import org.junit.Test;
 import worms.model.World;
 import worms.model.Worm;
 /**
- * A Junit testsuite to test public mutable methods of the class world 
+ * A Junit testsuite to test all public methods of the class world 
  * 
  * The methods are tested for legal and illegal cases
  * 
  * @author Mathijs Nelissen & Pieterjan Vingerhoets 
- * version 0.1
+ * version 0.2
  */
 
 public class WorldTests {
@@ -144,19 +144,27 @@ public class WorldTests {
 	}
 	@Test
 	public void testGetCurrentWorm() {
-
+		World.addWormToWorld();
+		assertEquals(world.getWorms()[0], world.getCurrentWorm());
 	}
 	@Test
 	public void testGetFood() {
-
+		world.addFoodToWorld(1, 1);
+		assertEquals(1,world.getFood().size());
 	}
 	@Test
 	public void testGetWinner() {
-
+		
+		Worm won = world.createWorm(1, 1, 0.25);
+		world.removeWormFromWorld(world.addWormToWorld(1, 0, 0.25));
+		world.removeWormFromWorld(world.addWormToWorld(0, 1, 0.25));
+		
+		assertEquals(won, world.getWinner());
 	}
 	@Test
 	public void testGetWorms() {
-
+		world.addEmptyTeam("Test");
+		assertEquals(1, world.getTeams());
 	}
 	@Test
 	public void testGetObjectsInWorld() {
@@ -181,7 +189,9 @@ public class WorldTests {
 
 	@Test
 	public void testGetTeams() {
-
+		world.addEmptyTeam("Hey");
+		world.addEmptyTeam("Hela");
+		assertEquals(2, world.getTeams().size());
 	}
 
 	@Test
