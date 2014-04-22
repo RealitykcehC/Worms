@@ -38,7 +38,49 @@ public class Team {
 			throw new IllegalArgumentException();
 		this.name = name;
 	}
+	
+	/**
+	 * Function that returns the name of this team.
+	 * 
+	 * @return this.name
+	 * 			The name of this team
+	 */
+	public String getTeamName() {
+		return this.name;
+	}
 
+	public ArrayList<Worm> getLiveWormsInTeam() {
+		ArrayList<Worm> liveWorms = new ArrayList<Worm>();
+		for (Worm liveWorm : this.teamMembers)
+			if (liveWorm.isAlive())
+				liveWorms.add(liveWorm);
+		return liveWorms;	
+	}
+	
+	public void addTeamMember(Worm worm) {
+		this.teamMembers.add(worm);
+	}
+	
+	/**
+	 * Function that counts and returns the number of survivors in this team.
+	 * 
+	 * @return counter
+	 * 			The number of survivors in this team
+	 * @throws	NullPointerException
+	 * 			The team must exist, otherwise an exception has to be thrown.
+	 * 			| teamMembers == null
+	 */
+	public int countSurvivors() throws NullPointerException {
+		if (teamMembers == null)
+			throw new NullPointerException();
+		int counter = 0;
+		for (Worm worm : teamMembers) {
+			if (worm.getActionPoints() > 0 && worm.getHitPoints() > 0)
+				counter++;
+		}
+		return counter;
+	}
+	
 	/**
 	 * Function that checks whether or not a provided name is a valid team name.
 	 * 
@@ -60,48 +102,5 @@ public class Team {
 			return true;
 		}
 		return false;
-	}
-
-	/**
-	 * Function that returns the name of this team.
-	 * 
-	 * @return this.name
-	 * 			The name of this team
-	 */
-	public String getTeamName() {
-		return this.name;
-	}
-
-	/**
-	 * Function that counts and returns the number of survivors in this team.
-	 * 
-	 * @return counter
-	 * 			The number of survivors in this team
-	 * @throws	NullPointerException
-	 * 			The team must exist, otherwise an exception has to be thrown.
-	 * 			| teamMembers == null
-	 */
-	public int countSurvivors() throws NullPointerException {
-		if (teamMembers == null)
-			throw new NullPointerException();
-		int counter = 0;
-		for (Worm worm : teamMembers) {
-			if (worm.getActionPoints() > 0 && worm.getHitPoints() > 0)
-				counter++;
-		}
-		return counter;
-	}
-	
-	public ArrayList<Worm> getLiveWormsInTeam() {
-		ArrayList<Worm> liveWorms = new ArrayList<Worm>();
-		for (Worm liveWorm : this.teamMembers)
-			if (liveWorm.isAlive())
-				liveWorms.add(liveWorm);
-		return liveWorms;
-				
-	}
-	
-	public void addTeamMember(Worm worm) {
-		this.teamMembers.add(worm);
 	}
 }
