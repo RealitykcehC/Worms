@@ -32,25 +32,25 @@ public class WorldTests {
 					- - - / /
 					- - - / /		*/
 		boolean [][] passable = {[{true,true,true, false, false},{true, true, true, false, false},{true,true,true, false, false}};
-		World world = new World(5,5, passable, Random random);
+		World world = new World(5.0,5.0, passable, Random random);
 		
 	}
 	@After
 	public void Breakdown(){
-		World world = new World (5,5);
+		World world = new World (5.0,5.0);
 	}
 
 	@Test
 	public void testWorld(){
 		
-		assertEquals(5,world.getWidth());
-		assertEquals(5,world.getHeight());
+		assertEquals(5.0,world.getWidth());
+		assertEquals(5.0,world.getHeight());
 	}
 	@Test
 	public void testIsValidWidth_LegalCase() {
 		
 		assertTrue(world.isValidWidth(world.getWidth()));
-		world= new World(0, 0);
+		world= new World(0.0, 0.0);
 		assertTrue(world.isValidWidth(world.getWidth()));
 	}
 	@Test (expected = IllegalAmountException.class)
@@ -64,7 +64,7 @@ public class WorldTests {
 	public void testIsValidHeight_LegalCase() {
 		
 		assertTrue(world.isValidHeight(world.getHeight));
-		world= new World(0,0);
+		world= new World(0.0,0.0);
 		assertTrue(world.isValidHeight(world.getheight));
 	}
 	@Test (expected = IllegalAmountException.class)
@@ -77,12 +77,12 @@ public class WorldTests {
 	@Test
 	public void testGetWidth() {
 		
-		assertEquals(5, world.getWidth());
+		assertEquals(5.0, world.getWidth());
 	}
 	@Test
 	public void testGetHeight() {
 		
-		assertEquals(5, world.getHeight());
+		assertEquals(5.0, world.getHeight());
 	}
 	@Test
 	public void testAddWormToWorld() {
@@ -101,7 +101,7 @@ public class WorldTests {
 	public void testAddEmptyTeam_LegalNameCase() {
 		// 
 		assertTrue(world.addEmtyTeam("This Testname is 4 shame' but legal"));
-		assertTrue(["name is valid for uppercase letters, punctuation and numbers"], world.getTeams().size()==1)
+		assertTrue(["name is valid for uppercase letters, punctuation and numbers"], 1 == world.getTeams().size()==1)
 
 	}
 	@Test (expected = IllegalArgumentException.class)
@@ -129,7 +129,7 @@ public class WorldTests {
 
 	@Test
 	public void testGetActiveProjectile() {
-		world.createWorm(1, 1, 1, 1, "Test");
+		world.createWorm(1.0, 1.0, 1.0, 1.0, "Test");
 		
 		assertEquals(world.getCurrentWorm().getProjectileworm.getProjectile();
 	}
@@ -151,21 +151,21 @@ public class WorldTests {
 	@Test
 	public void testGetCurrentWorm() {
 		World.addWormToWorld();
-		assertEquals(world.getWorms()[0], world.getCurrentWorm());
+		assertSame(world.getWorms()[0], world.getCurrentWorm());
 	}
 	@Test
 	public void testGetFood() {
-		world.addFoodToWorld(1, 1);
+		world.addFoodToWorld(1.0, 1.0);
 		assertEquals(1,world.getFood().size());
 	}
 	@Test
 	public void testGetWinner() {
 		
-		Worm won = world.createWorm(1, 1, 0.25);
-		Worm didntwin= world.addWormToWorld(1, 0, 0.25);
+		Worm won = world.createWorm(1.0, 1.0, 0.25);
+		Worm didntwin= world.addWormToWorld(1.0, 00, 0.25);
 		didntwin.setMaxHitPoints(0);
-		world.removeWormFromWorld(world.addWormToWorld(1, 0, 0.25));
-		world.removeWormFromWorld(world.addWormToWorld(0, 1, 0.25));
+		world.removeWormFromWorld(world.addWormToWorld(1.0, 0.0, 0.25));
+		world.removeWormFromWorld(world.addWormToWorld(0.0, 1.0, 0.25));
 		
 		assertSame(won, world.getWinner());
 	}
@@ -185,18 +185,18 @@ public class WorldTests {
 	@Test
 	public void testCalculateLocationStatus_LegalCases() {
 		
-		world = new World(5,5, passable, Random random);
-		assertEquals(world.isImpassable, world.calculateLocationStatus(1, 5, 0.25));
-		assertEquals(world.isAdjacent, world.calculateLocationStatus(1, 3, 0.95));
-		assertEquals(world.isPassable, world.calculateLocationStatus(1, 1, 0.25));
-		assertEquals(!world.isImpassable, world.calculateLocationStatus(1, 1, 0.25);
-		assertEquals(!world.isAdjacent, world.calculateLocationStatus(1, 1, 0.25);
-		assertEquals(!world.isAdjacent, world.calculateLocationStatus(1, 5, 0.25);
-		assertEquals(!world.isPassable, world.calculateLocationStatus(1, 5, 0.25);
+		world = new World(5.0,5.0, passable, Random random);
+		assertEquals(world.isImpassable, world.calculateLocationStatus(1.0, 5.0, 0.25));
+		assertEquals(world.isAdjacent, world.calculateLocationStatus(1.0, 3.0, 0.95));
+		assertEquals(world.isPassable, world.calculateLocationStatus(1.0, 1.0, 0.25));
+		assertEquals(!world.isImpassable, world.calculateLocationStatus(1.0, 1.0, 0.25);
+		assertEquals(!world.isAdjacent, world.calculateLocationStatus(1.0, 1.0, 0.25);
+		assertEquals(!world.isAdjacent, world.calculateLocationStatus(10, 5.0, 0.25);
+		assertEquals(!world.isPassable, world.calculateLocationStatus(1.0, 5.0, 0.25);
 	}
 	@Test
 	public void testStartGame_LegalCase{
-		world.createWorm(1, 1, 1, 1, "Test");
+		world.createWorm(1.0, 1.0, 1, 1.0, "Test");
 		world.startGame();
 		assertsame(collectionOfWorms()[0], world.getCurrentWorm());
 		assertEquals(true, world.isStarted);
@@ -204,8 +204,8 @@ public class WorldTests {
 	
 	@Test
 	public void testStartNextTurn() {
-		world.createWorm(1, 1, 1, 1, "Test1");
-		world.createWorm(1, 1, 1, 1, "Test2");
+		world.createWorm(1.0, 1.0, 1.0, 1.0, "Test1");
+		world.createWorm(1.0, 1.0, 1.0, 1.0, "Test2");
 		world.startGame();
 		world.startNextTurn();
 		assertEquals (world.getCurrentWorm().getName(), "Test2")
@@ -223,14 +223,14 @@ public class WorldTests {
 	@Test
 	public void testCreateFood_LegalTerrainCase() {
 
-		world.createFood(1, 1);
+		world.createFood(1.0, 1.0);
 		assertEquals(1, world.getFood().size());
 
 	}
 	@Test (expected = IllegalArgumentException)
 	public void testCreatFood_IllegalTerrainCase() 
 			throws Exception{
-		world.createFood(1, 5);
+		world.createFood(1.0, 5.0);
 		assertFalse(["Invalid Terrain"],world.getFood().size()==1); 
 	}
 	@Test (expected = IllegalArgumentException)
@@ -242,45 +242,45 @@ public class WorldTests {
 			}
 	@Test
 	public void testCreateWorm_LegalCase() {
-		world.createWorm(1, 1, 0, 0.25, "Test");
+		world.createWorm(1.0, 1.0, 0.0, 0.25, "Test");
 		assertEquals(world.getWorms().size() == 1);
-		world.createWorm(0, 0, 0, 0.25, "Test");
+		world.createWorm(0.0, 0.0, 0.0, 0.25, "Test");
 		assertEquals(world.getWorms().size() == 2)
 	}
 	@Test (expected = IllegalArgumentException)
 	public void testCreateWorm_IllegalTerrainCase()
 			throws Exception
 			{
-		world.createWorm(1, 5, 0, 0.25, "Test");
+		world.createWorm(1.0, 5.0, 0.0, 0.25, "Test");
 		assertFalse(["Invalid coordinates"],world.getWorms().size()== 1);
 			}
 	@Test (expected = IllegalArgumentException)
 	public void testCreateWorm_OutOfWorldBoundsCase()
 			throws Exception
 			{
-		world.createWorm(illegalCoordinate, illegalCoordinate, 0, 0.25, "Test");
+		world.createWorm(illegalCoordinate, illegalCoordinate, 0.0, 0.25, "Test");
 		assertFalse(["Invalid coordinates, out of world bounds"],world.getWorms().size()== 1);
 			}
 	@Test (expected = IllegalArgumentException)
 	public void testCreateWorm_IllegalNameCase()
 			throws Exception{
 		
-		world.createWorm(0, 0, 0, 0.25, illegalTeamName);
+		world.createWorm(0.0, 0.0, 0.0, 0.25, illegalTeamName);
 		assertFalse(["Invalid name"],1 == world.getWorms().size());
 			}
 	@Test (expected = IllegalArgumentException)
 	public void testCreateWorm_IllegalRadiusCase()
 			throws Exception{
 		
-		world.createWorm(0, 0, 0, illegalRadius, "Test");
+		world.createWorm(0.0, 0.0, 0.0, illegalRadius, "Test");
 		assertFalse(["Invalid Radius"]1 == world.getWorms().size());
 
 	}
 	@Test
 	public void testLiesInWorld_LegalCase() {
 		
-		assertTrue(world.liesInWorld(1, 2, 0.25));
-		assertTrue(world.liesInWorld(1, 2, 1));
+		assertTrue(world.liesInWorld(1.0, 2.0, 0.25));
+		assertTrue(world.liesInWorld(1.0, 2.0, 1));
 	}
 	@Test(expected = IllegalArgumentException)
 	public void testLiesInWorld_IllegalOutOfBoundCase()
@@ -292,13 +292,13 @@ public class WorldTests {
 	public void testLiesInWorld_IllegalRadiusCase(){
 			throws Exception{
 				
-		assertFalse(["Invalid Radius"],world.liesinWorld(1, 1, illegalRadius));
+		assertFalse(["Invalid Radius"],world.liesinWorld(1.0, 1.0, illegalRadius));
 	}
 	@Test
 	public void testIsGameFinished(){
 		assertFalse(world.isGameFinished);
-		world.createWorm(1, 1, 1, 1, "Test1");
-		world.createWorm(1, 1, 1, 1, "Test2");
+		world.createWorm(1.0, 1.0, 1.0, 1.0, "Test1");
+		world.createWorm(1.0, 1.0, 1.0, 1.0, "Test2");
 		world.startGame();
 		world.world.getWorms()[0].setMaxHitPoints(0);
 		assertTrue(world.isGameFinished);
