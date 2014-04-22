@@ -22,11 +22,18 @@ public class Rifle extends Projectile {
 	/**
 	 * Declaration of variables.
 	 */
+//	@SuppressWarnings("unused")
 	private final int actionPointsCost = 10;
+//	@SuppressWarnings("unused")
 	private final int hitPointsReduce = 20;
+//	@SuppressWarnings("unused")
 	private final double mass = 0.01;
-	private final double force = 1.5;
+//	@SuppressWarnings("unused")
 	private final String weaponName = "Rifle";
+//	@SuppressWarnings("unused")
+	private double force;
+	@SuppressWarnings("unused")
+	private double upperForce = 1.5, lowerForce = 1.5;
 
 	/**
 	 * Constructor of the class Rifle.
