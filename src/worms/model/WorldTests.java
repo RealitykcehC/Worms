@@ -103,14 +103,14 @@ public class WorldTests {
 	@Test 
 	public void testAddEmtpyTeam_IllegalNameCase()
 		throws Exception{
-		
-		assertFalse(world.addEmptyTeam(illegalTeamName));
+		world.addEmptyTeam(illegalTeamName);
+		assertFalse(world.getTeams().size()==1);
 	}
 	@Test 
 	public void testAddEmptyTeam_IllegalAmountCharNameCase()
 		throws Exception{
-		
-		assertFalse(world.addEmtyTeam("He"));
+		world.addEmtyTeam("H");
+		assertFalse(world.getTeams().size()==1);
 	}
 	@Test 
 	public void testAddEmptyTeam_IllegalTeamAmountCase()
