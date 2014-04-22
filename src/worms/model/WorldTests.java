@@ -171,7 +171,7 @@ public class WorldTests {
 		
 		world = new World(5,5, passable, Random random);
 		assertEquals(world.isImpassable, world.calculateLocationStatus(1, 5, 0.25));
-		assertEquals(world.isAdjacent, world.calculateLocationStatus(1, 3, 0.25));
+		assertEquals(world.isAdjacent, world.calculateLocationStatus(1, 3, 0.95));
 		assertEquals(world.isPassable, world.calculateLocationStatus(1, 1, 0.25));
 	}
 	@Test
