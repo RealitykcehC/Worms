@@ -12,9 +12,11 @@ public class Food {
 	/**
 	 * Declaration of variables.
 	 */
-	private double x, y;
 	public static final double radius = 0.2;
 	private final double radiusIncrease = 1.1;
+	private double x, y;
+	private boolean isTerminated = false;
+	private World world;
 
 	/**
 	 * Constructor of the class Food.
@@ -28,9 +30,14 @@ public class Food {
 	 * @post	The provided y-coordinate has to be equal to the y-coordinate of this piece of food.
 	 * 			| (new this).getY() == y
 	 */
-	public Food(double x, double y) {
+	public Food(World world, double x, double y) {
+		this.world = world;
 		this.x = x;
 		this.y = y;
+	}
+	
+	public World getWorld() {
+		return this.world;
 	}
 
 	/**
@@ -84,10 +91,15 @@ public class Food {
 	 * 			This piece of food is not active
 	 */
 	public boolean isActive() {
-		return (this != null);
+		return (!this.isTerminated());
 	}
 
 	public void terminate() {
-		// TODO Auto-generated method stub.
+		this.world = null;
+		this.isTerminated = true;
+	}
+	
+	public boolean isTerminated() {
+		return this.isTerminated;
 	}
 }
