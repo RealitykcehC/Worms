@@ -22,11 +22,18 @@ public class Bazooka extends Projectile {
 	/**
 	 * Declaration of variables.
 	 */
+//	@SuppressWarnings("unused")
 	private final int actionPointsCost = 50;
+//	@SuppressWarnings("unused")
 	private final int hitPointsReduce = 80;
+//	@SuppressWarnings("unused")
 	private final double mass = 0.3;
-	private double force = 0; // TODO
+//	@SuppressWarnings("unused")
 	private final String weaponName = "Bazooka";
+//	@SuppressWarnings("unused")
+	private double force;
+	@SuppressWarnings("unused")
+	private double lowerForce = 2.5, upperForce = 9.5;
 
 	/**
 	 * Constructor of the class Bazooka.
