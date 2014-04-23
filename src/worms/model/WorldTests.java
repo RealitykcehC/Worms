@@ -212,7 +212,7 @@ public class WorldTests {
 		world.addWormToWorld();
 		for (Worm worm : world.getWorms()){
 			if (worm !=world.getCurrentWorm()){
-				worm.setMaxHitPoints(0);
+				worm.setHitPoints(0);
 			}
 		}
 		assertSame(world.getCurrentWorm(), world.getWinner());
@@ -358,7 +358,7 @@ public class WorldTests {
 		world.createWorm(1.0, 1.0, 1.0, 1.0, "Test1");
 		world.createWorm(1.0, 1.0, 1.0, 1.0, "Test2");
 		world.startGame();
-		world.getWorms().get(0).setMaxHitPoints(0);
+		world.getWorms().get(0).setHitPoints(0);
 		assertTrue(world.isGameFinished);
 	}
 
