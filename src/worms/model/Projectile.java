@@ -19,23 +19,18 @@ import be.kuleuven.cs.som.annotate.Basic;
  * 			that has to shoot. The worm always has a valid orientation.
  * 			| 0 <= this.getWorm().getOrientation() && this.getWorm().getOrientation() < 2 * Math.PI
  * @author Pieter Jan Vingerhoets & Matthijs Nelissen
- * @version 0.1a
+ * @version 0.9
  */
 public class Projectile {
 	/**
 	 * Declaration of variables.
 	 */
-	public final double density = 7800.0;
+	public final double DENSITY = 7800.0;
 	private double x, y, direction;
-	private int actionPointsCost = 0; // Default cost, the amount will be
-										// specified in the subclasses.
-	private int hitPointsReduce = 0; // Default Hit Points that need to be
-										// reduced. It will be specified in the
-										// subclasses.
-	private double mass = 0; // Default mass, the mass will be specified in the
-								// subclasses.
-	private double force = 0; // Default force, the force will be specified in
-								// the subclasses.
+	private int actionPointsCost = 0;
+	private int hitPointsReduce = 0;
+	private double mass = 0;
+	private double force = 0;
 	private double upperForce, lowerForce;
 	private boolean isTerminated = false;
 	private String weaponName = "Projectile";
@@ -49,9 +44,9 @@ public class Projectile {
 	 * @post	The given worm must be equal to the worm that has to shoot.
 	 * 			| (new this).getWorm() == worm
 	 * @post	The given x must be equal to the x-coordinate of the worm that is being created.
-	 * 			| (new this).getX() == worm.getX()
+	 * 			| (new this).getX() == worm.getX() + (Math.cos(worm.getOrientation()) * worm.getRadius())
 	 * @post	The given y must be equal to the y-coordinate of the worm that is being created.
-	 * 			| (new this).getY() == worm.getY()
+	 * 			| (new this).getY() == worm.getY() + (Math.sin(worm.getOrientation()) * worm.getRadius())
 	 * @post	The given direction has to be equal to the orientation of the worm that is being created.
 	 * 			The given direction first has to be recalculated to an angle in the interval [0, 2 * Math.PI[
 	 * 			| (new this).getOrientation() == worm.recalculateOrientation(worm.getOrientation())
@@ -152,21 +147,6 @@ public class Projectile {
 	public double getMass() {
 		return this.mass;
 	}
-
-	/**
-	 * Function which returns the initial force of this projectile, just before its launch.
-	 * 
-	 * @return this.force
-	 * 			The initial force of this projectile.
-	 */
-	@Basic
-	public double getForce() {
-		return this.force;
-	}
-
-	public double getRadius() {
-		return Math.cbrt((3 * (mass / density)) / (4 * Math.PI));
-	}
 	
 	/**
 	 * Function that returns the name of this weapon.
@@ -174,19 +154,29 @@ public class Projectile {
 	 * @return this.weaponName
 	 * 			The name of this weapon
 	 */
+	@Basic
 	public String getWeaponName() {
 		return this.weaponName;
 	}
+	
+	/**
+	 * Function which returns the initial force of this projectile, just before its launch.
+	 * 
+	 * @return this.force
+	 * 			The initial force of this projectile.
+	 */
+	public double getForce() {
+		return this.force;
+	}
 
 	/**
-	 * Function which calculates the distance of the jump (i.e. the shot). This is the distance that this projectile will travel before falling.
+	 * Function that calculates and returns the radius of this projectile.
 	 * 
-	 * @return (Math.pow(this.getInitialVelocity(), 2) * Math.sin(2 * this.getOrientation())) / this.getWorm().g
-	 * 			The distance this projectile travels after it has been shot
+	 * @return radius
+	 * 			The radius of this projectile
 	 */
-	public double getJumpDistance() {
-		return (Math.pow(this.getInitialVelocity(), 2) * Math.sin(2 * this
-				.getOrientation())) / this.getWorm().g;
+	public double getRadius() {
+		return Math.cbrt((3 * (mass / DENSITY)) / (4 * Math.PI));
 	}
 
 	/**
@@ -200,11 +190,12 @@ public class Projectile {
 	}
 
 	/**
-	 * Function that returns the time this projectile will travel before falling down or exploding (given that it didn't hit an impassable position already).
-	 * @param timeStep 
+	 * Function that returns the time this projectile will travel before exploding.
 	 * 
-	 * @return this.getJumpDistance() / (this.getInitialVelocity() * Math.cos(this.getOrientation()))
-	 * 			The time this projectile will travel before falling down or exploding.
+	 * @param timeStep 
+	 * 			A time scale for which the projectile will not go through any impassable terrain
+	 * @return totalJumpTime
+	 * 			The time this projectile will travel before exploding.
 	 */
 	public double getJumpTime(double timeStep) {
 		double newX = 0, newY = 0;
@@ -234,12 +225,20 @@ public class Projectile {
 				* Math.sin(this.getOrientation());
 		double Xt = this.getX() + (initVelocityX * t);
 		double Yt = this.getY()
-				+ ((initVelocityY * t) - (.5 * this.getWorm().g * Math
+				+ ((initVelocityY * t) - (.5 * this.getWorm().GRAV_CST * Math
 						.pow(t, 2)));
 		double[] result = { Xt, Yt };
 		return result;
 	}
 
+	/**
+	 * Function which will set the correct force of this projectile to be fired, according to the given yield.
+	 * 
+	 * @param yield
+	 * 			The propulsion yield with which this projectile has to be fired
+	 * @post	The force has to have been calculated, according to the propulsion yield.
+	 * 			| (new this).getForce() == this.lowerForce + (this.upperForce - this.lowerForce) * (yield / 100)
+	 */
 	public void setForce(int yield) {
 		this.force = this.lowerForce + (this.upperForce - this.lowerForce) * (yield / 100);
 	}
@@ -278,6 +277,14 @@ public class Projectile {
 		this.y = newY;
 	}
 
+	/**
+	 * Function that checks whether or not this projectile can be fired.
+	 * 
+	 * @return true
+	 * 			This projectile can be fired
+	 * @return false
+	 * 			This projectile cannot be fired
+	 */
 	public boolean canJump() {
 		if (this.getWorm().getActionPoints() - this.getActionPointsCost() < 0)
 			return false;
@@ -289,24 +296,23 @@ public class Projectile {
 
 	/**
 	 * Function which fires this projectile.
-	 * The x-coordinate of this projectile is the starting x-coordinate added to the distance this projectile travels.
-	 * The Action Points of the worm that shot this projectile has to be adjusted. This means that the cost to fire this projectile has to be subtracted from the worm's
-	 * current amount of Action Points.
-	 * When needed, the projectile will fall if it didn't hit anything yet.
 	 * 
-	 * @post	The x-coordinate of this projectile has to be adjusted. The new x-coordinate is equal to the old one added to the distance of the shot.
-	 * 			| (new this).getX() == this.getX() + this.getJumpDistance()
-	 * @post	Should the new amount of Action Points of the worm that fired become 0, the worm will be terminated (i.e. he dies).
-	 * 			| if (this.getWorm().getActionPoints() == 0)
-	 * 			|	then (this.getWorm().terminate())
+	 * @post	The x-coordinate of this projectile has to have been adjusted.
+	 * 			| (new this).getX() == newX
+	 * @post	The y-coordinate of this projectile has to have been adjusted.
+	 * 			| (new this).getY() == newY
+	 * @effect	If the projectile hits a worm, that worm's Hit Points have to be reduced (a worm cannot hit itself).
+	 * 			| this.hitsWorm()
+	 * @effect	At the end, this projectile has to be removed from the game world.
+	 * 			| (new this).getWorm().getWorld().removeProjectileFromWorld(this)
 	 * @throws	ArithmeticException
 	 * 			The x-coordinate, after having traveled the distance of the shot, has to be valid.
 	 * 			| !Worm.isValidX(this.getX() + this.getJumpDistance())
 	 */
 	public void jump(double timeStep) throws ArithmeticException {
+		if (!canJump())
+			throw new ArithmeticException();
 //		double[] jumpStep = new double[2];
-//		if (!canJump())
-//			throw new ArithmeticException();
 //		jumpStep = this.getJumpStep(this.getJumpTime(timeStep));
 //		this.x = jumpStep[0];
 //		this.y = jumpStep[1];
@@ -329,13 +335,8 @@ public class Projectile {
 	/**
 	 * Function that handles the events that need to be handled when a worm is hit.
 	 * 
-	 * @param hitWorm
-	 * 			The worm that has been hit
 	 * @post	The Hit Points of the worm that has been hit have to be adjusted, according to the number of Hit Points that should be removed for a certain projectile.
 	 * 			| hitWorm.setHitPoints(hitWorm.getHitPoints() - this.getHitPointsReduction())
-	 * @post	If the amount of Hit Points of the hit worm became 0 by hitting it, the hit worm will be terminated (i.e. he died).
-	 * 			| if (!hitWorm.isAlive())
-	 * 			|	then (hitWorm.terminate())
 	 */
 	public void hitsWorm() {
 		for (Worm hitWorm : this.getWorm().getWorld().getWorms()) {
@@ -348,13 +349,12 @@ public class Projectile {
 	}
 
 	/**
-	 * Method that checks whether or not this projectile is active (i.e. its 
-	 * reference is not null).
+	 * Method that checks whether or not this projectile is active (i.e. has not yet been terminated).
 	 * 
 	 * @return true
 	 * 			This projectile is active
 	 * @return false
-	 * 			This projectile is inactive.
+	 * 			This projectile is no longer active.
 	 */
 	public boolean isActive() {
 		return (!this.isTerminated());
@@ -363,18 +363,40 @@ public class Projectile {
 	/**
 	 * Function that terminates this projectile.
 	 * 
-	 * @return null
-	 * 			The new value for this projectile.
+	 * @post	The reference to the worm has to be broken.
+	 * 			| (new this).getWorm() == null
+	 * @post	This projectile has to know it has been terminated.
+	 * 			| (new this).isTerminated()
 	 */
 	public void terminate() {
 		this.worm = null;
 		this.isTerminated = true;
 	}
 
+	/**
+	 * Function that returns whether or not this projectile has been terminated.
+	 * 
+	 * @return true
+	 * 			This projectile has been terminated
+	 * @return false
+	 * 			This projectile has not yet been terminated
+	 */
 	public boolean isTerminated() {
 		return this.isTerminated;
 	}
 
+	/**
+	 * Function that returns whether or not the jump of this projectile is finished.
+	 * 
+	 * @param newX
+	 * 			The x-coordinate for which has to be checked whether or not this projectile's jump is finished
+	 * @param newY
+	 * 			The y-coordinate for which has to be checked whether or not this projectile's jump is finished
+	 * @return true
+	 * 			This projectile's jump is finished
+	 * @return false
+	 * 			This projectile's jump is not yet finished
+	 */
 	public boolean isJumpFinished(double newX, double newY) {
 		boolean projectileLiesInWorld = this.getWorm().getWorld().liesInWorld(newX, newY,
 				this.getRadius());
