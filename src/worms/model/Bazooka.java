@@ -22,17 +22,11 @@ public class Bazooka extends Projectile {
 	/**
 	 * Declaration of variables.
 	 */
-//	@SuppressWarnings("unused")
 	private final int actionPointsCost = 50;
-//	@SuppressWarnings("unused")
 	private final int hitPointsReduce = 80;
-//	@SuppressWarnings("unused")
-	private final double mass = 0.3;
-//	@SuppressWarnings("unused")
+	private final double mass = .3;
 	private final String weaponName = "Bazooka";
-//	@SuppressWarnings("unused")
 	private double force;
-	@SuppressWarnings("unused")
 	private double lowerForce = 2.5, upperForce = 9.5;
 
 	/**
@@ -103,5 +97,15 @@ public class Bazooka extends Projectile {
 	@Override
 	public String getWeaponName() {
 		return this.weaponName;
+	}
+	
+	@Override
+	public double getRadius() {
+		return Math.cbrt((3 * (mass / density)) / (4 * Math.PI));
+	}
+	
+	@Override
+	public void setForce(int yield) {
+		this.force = this.lowerForce + (this.upperForce - this.lowerForce) * (yield / 100);
 	}
 }
