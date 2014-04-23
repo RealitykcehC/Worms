@@ -354,12 +354,12 @@ public class WorldTests {
 	}
 	@Test
 	public void testIsGameFinished(){
-		assertFalse(world.isGameFinished);
+		assertFalse(world.isGameFinished());
 		world.createWorm(1.0, 1.0, 1.0, 1.0, "Test1");
 		world.createWorm(1.0, 1.0, 1.0, 1.0, "Test2");
 		world.startGame();
 		world.getWorms().get(0).setHitPoints(0);
-		assertTrue(world.isGameFinished);
+		assertTrue(world.isGameFinished());
 	}
 
 
