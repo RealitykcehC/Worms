@@ -25,11 +25,13 @@ public class WorldTests {
 	private static final double illegalCoordinate = -1.0;
 	private static final String illegalTeamName= "lowercase name";
 
-	/**	passable = 	- - - / / 
-					- - - / /
-					- - - / /		*/
+
 	private static Random ron = new Random();
-	private static boolean [][] passable = {{true,true,true, false, false},{true, true, true, false, false},{true,true,true, false, false}};
+	private static boolean [][] passable = {{true,true,true, false, false},
+						true,true, false, false},
+						true,true, false, false},
+						true,true, false, false},
+						true,true, false, false}};
 	private static World world = new World(5.0,5.0, passable, ron);
 
 	@Test
