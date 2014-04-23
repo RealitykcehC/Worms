@@ -22,17 +22,11 @@ public class Rifle extends Projectile {
 	/**
 	 * Declaration of variables.
 	 */
-//	@SuppressWarnings("unused")
 	private final int actionPointsCost = 10;
-//	@SuppressWarnings("unused")
 	private final int hitPointsReduce = 20;
-//	@SuppressWarnings("unused")
-	private final double mass = 0.01;
-//	@SuppressWarnings("unused")
+	private final double mass = .01;
 	private final String weaponName = "Rifle";
-//	@SuppressWarnings("unused")
 	private double force;
-	@SuppressWarnings("unused")
 	private double upperForce = 1.5, lowerForce = 1.5;
 
 	/**
@@ -103,5 +97,15 @@ public class Rifle extends Projectile {
 	@Override
 	public String getWeaponName() {
 		return this.weaponName;
+	}
+	
+	@Override
+	public double getRadius() {
+		return Math.cbrt((3 * (mass / density)) / (4 * Math.PI));
+	}
+	
+	@Override
+	public void setForce(int yield) {
+		this.force = this.lowerForce + (this.upperForce - this.lowerForce) * (yield / 100);
 	}
 }
