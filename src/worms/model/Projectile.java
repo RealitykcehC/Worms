@@ -163,53 +163,19 @@ public class Projectile {
 	public double getForce() {
 		return this.force;
 	}
-	
+
 	public double getRadius() {
-		return Math.pow((3 * (mass / density)) / (4 * Math.PI), 1 / 3);
+		return Math.cbrt((3 * (mass / density)) / (4 * Math.PI));
 	}
 	
 	/**
-	 * Function that returns the time this projectile will travel before falling down or exploding (given that it didn't hit an impassable position already).
-	 * @param timeStep 
+	 * Function that returns the name of this weapon.
 	 * 
-	 * @return this.getJumpDistance() / (this.getInitialVelocity() * Math.cos(this.getOrientation()))
-	 * 			The time this projectile will travel before falling down or exploding.
+	 * @return this.weaponName
+	 * 			The name of this weapon
 	 */
-	public double getJumpTime(double timeStep) {
-		double newX = 0, newY = 0;
-		double[] jumpStep = new double[2];
-		double totalJumpTime = 0;
-		do {
-			jumpStep = this.getJumpStep(totalJumpTime);
-			newX = jumpStep[0];
-			newY = jumpStep[1];
-			totalJumpTime += timeStep;
-		} while (this.getRadius() >= Math.sqrt(Math.pow(this.getX() - newX, 2)
-				+ Math.pow(this.getY() - newY, 2)) || !(isJumpFinished(newX, newY)));
-		// || !(isJumpFinished(newX, newY)));
-		// Starting methods call this method too often: program gets stuck.
-		return totalJumpTime;
-	}
-	
-	/**
-	 * Function which returns an array which holds the (x,y)-coordinates of this projectile after being shot at time t.
-	 * 
-	 * @param t
-	 * 			The time after being shot
-	 * @return result
-	 * 			An array which holds the (x,y)-coordinates of this projectile after being shot at time t
-	 */
-	public double[] getJumpStep(double t) {
-		double initVelocityX = this.getInitialVelocity()
-				* Math.cos(this.getOrientation());
-		double initVelocityY = this.getInitialVelocity()
-				* Math.sin(this.getOrientation());
-		double Xt = this.getX() + (initVelocityX * t);
-		double Yt = this.getY()
-				+ ((initVelocityY * t) - (.5 * this.getWorm().g * Math
-						.pow(t, 2)));
-		double[] result = { Xt, Yt };
-		return result;
+	public String getWeaponName() {
+		return this.weaponName;
 	}
 
 	/**
@@ -232,17 +198,48 @@ public class Projectile {
 	public double getInitialVelocity() {
 		return (this.getForce() / this.getMass()) * .5;
 	}
-	
+
 	/**
-	 * Function that returns the name of this weapon.
+	 * Function that returns the time this projectile will travel before falling down or exploding (given that it didn't hit an impassable position already).
+	 * @param timeStep 
 	 * 
-	 * @return this.weaponName
-	 * 			The name of this weapon
+	 * @return this.getJumpDistance() / (this.getInitialVelocity() * Math.cos(this.getOrientation()))
+	 * 			The time this projectile will travel before falling down or exploding.
 	 */
-	public String getWeaponName() {
-		return this.weaponName;
+	public double getJumpTime(double timeStep) {
+		double newX = 0, newY = 0;
+		double[] jumpStep = new double[2];
+		double totalJumpTime = 0;
+		do {
+			jumpStep = this.getJumpStep(totalJumpTime);
+			newX = jumpStep[0];
+			newY = jumpStep[1];
+			totalJumpTime += timeStep;
+		} while (!(this.isJumpFinished(newX, newY)));
+		return totalJumpTime;
 	}
-	
+
+	/**
+	 * Function which returns an array which holds the (x,y)-coordinates of this projectile after being shot at time t.
+	 * 
+	 * @param t
+	 * 			The time after being shot
+	 * @return result
+	 * 			An array which holds the (x,y)-coordinates of this projectile after being shot at time t
+	 */
+	public double[] getJumpStep(double t) {
+		double initVelocityX = this.getInitialVelocity()
+				* Math.cos(this.getOrientation());
+		double initVelocityY = this.getInitialVelocity()
+				* Math.sin(this.getOrientation());
+		double Xt = this.getX() + (initVelocityX * t);
+		double Yt = this.getY()
+				+ ((initVelocityY * t) - (.5 * this.getWorm().g * Math
+						.pow(t, 2)));
+		double[] result = { Xt, Yt };
+		return result;
+	}
+
 	public void setForce(int yield) {
 		this.force = this.lowerForce + (this.upperForce - this.lowerForce) * (yield / 100);
 	}
@@ -280,12 +277,12 @@ public class Projectile {
 			throw new IllegalArgumentException();
 		this.y = newY;
 	}
-	
+
 	public boolean canJump() {
 		if (this.getWorm().getActionPoints() - this.getActionPointsCost() < 0)
 			return false;
-		if (this.getWorm().getWorld().isImpassable(this.getX(), this.getY(),
-				this.getRadius()))
+		if (this.getWorm().getWorld().isImpassable(this.getWorm().getX(), this.getWorm().getY(),
+				this.getWorm().getRadius()))
 			return false;
 		return true;
 	}
@@ -307,21 +304,26 @@ public class Projectile {
 	 * 			| !Worm.isValidX(this.getX() + this.getJumpDistance())
 	 */
 	public void jump(double timeStep) throws ArithmeticException {
+//		double[] jumpStep = new double[2];
+//		if (!canJump())
+//			throw new ArithmeticException();
+//		jumpStep = this.getJumpStep(this.getJumpTime(timeStep));
+//		this.x = jumpStep[0];
+//		this.y = jumpStep[1];
+//		if (!this.getWorm().getWorld().liesInWorld(this.getX(), this.getY(), this.getRadius()))
+//			this.getWorm().getWorld().removeProjectileFromWorld(this);
 		double newX = 0, newY = 0;
-		double oldX = this.getX(), oldY = this.getY();
 		double[] jumpStep = new double[2];
 		double totalJumpTime = 0;
-		if (!canJump())
-			throw new ArithmeticException();
 		do {
 			jumpStep = this.getJumpStep(totalJumpTime);
 			newX = jumpStep[0];
 			newY = jumpStep[1];
 			totalJumpTime += timeStep;
-		} while (this.getRadius() >= Math.sqrt(Math.pow(oldX - newX, 2)
-				+ Math.pow(oldY - newY, 2))|| !(isJumpFinished(newX, newY))); // 
-		this.setX(newX);
-		this.setY(newY);
+		} while (!(this.isJumpFinished(newX, newY)));
+		this.hitsWorm();
+		if (this.isJumpFinished(this.getX(), this.getY()))
+			this.getWorm().getWorld().removeProjectileFromWorld(this);
 	}
 
 	/**
@@ -337,11 +339,10 @@ public class Projectile {
 	 */
 	public void hitsWorm() {
 		for (Worm hitWorm : this.getWorm().getWorld().getWorms()) {
-			if (Math.sqrt(Math.pow((this.getX() - hitWorm.getX()), 2)
+			if (hitWorm != this.getWorm() && Math.sqrt(Math.pow((this.getX() - hitWorm.getX()), 2)
 					+ Math.pow((this.getY() - hitWorm.getY()), 2)) < this
 					.getRadius() + hitWorm.getRadius()) {
 				hitWorm.setHitPoints(hitWorm.getHitPoints() - this.getHitPointsReduction());
-				this.terminate();
 			}
 		}
 	}
@@ -369,16 +370,16 @@ public class Projectile {
 		this.worm = null;
 		this.isTerminated = true;
 	}
-	
+
 	public boolean isTerminated() {
 		return this.isTerminated;
 	}
-	
-	private boolean isJumpFinished(double newX, double newY) {
-		boolean wormLiesInWorld = this.getWorm().getWorld().liesInWorld(newX, newY,
+
+	public boolean isJumpFinished(double newX, double newY) {
+		boolean projectileLiesInWorld = this.getWorm().getWorld().liesInWorld(newX, newY,
 				this.getRadius());
-		boolean wormHitsAdjTerrain = this.getWorm().getWorld().isAdjacent(newX, newY,
+		boolean projectileHitsImpTerrain = this.getWorm().getWorld().isImpassable(newX, newY,
 				this.getRadius());
-		return (!wormLiesInWorld && wormHitsAdjTerrain);
+		return (!projectileLiesInWorld || projectileHitsImpTerrain);
 	}
 }
