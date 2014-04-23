@@ -8,7 +8,7 @@ import java.util.Random;
  * A class that implements all the aspects of the game world.
  * 
  * @author Pieter Jan Vingerhoets & Matthijs Nelissen
- * @version 0.1a
+ * @version 0.9
  */
 public class World {
 	/**
@@ -50,7 +50,7 @@ public class World {
 	 * 			| (new this).randomSeed = random
 	 * @throws	IllegalArgumentException
 	 * 			The provided width and/or the provided height are invalid.
-	 * 			|!this.canHaveAsWidth(this.getWidth()) || !this.canHaveAsHeight(this.getHeight())
+	 * 			|!isValidWidth(width) || !isValidHeight(height)
 	 */
 	public World(double width, double height, boolean[][] passableMap,
 			Random random) throws IllegalArgumentException {
@@ -376,48 +376,6 @@ public class World {
 	}
 
 	/**
-	 * Method that checks the location status of this world for an object that stands on the given coordinates (x,y) and has the given radius.
-	 * 
-	 * @param x
-	 * 			The x-coordinate of the object
-	 * @param y
-	 * 			The y-coordinate of the object
-	 * @param radius
-	 * 			The radius of the worm
-	 * @effect	The boolean values impassable, adjacent and passable are set to the correct values for the object's position and radius.
-	 * 			| if (object.isImpassable(object.getX(), object.getY, object.getRadius())
-	 * 			|	then ((new this).impassable && !((new this).adjacent) && !((new this).passable))
-	 * 			| else if (object.isAdjacent(object.getX(), object.getY, object.getRadius())
-	 * 			|	then (!((new this).impassable) && (new this).adjacent && !((new this).passable))
-	 * 			| else if (object.isPassable(object.getX(), object.getY, object.getRadius())
-	 * 			|	then (!((new this).impassable) && !((new this).adjacent) && (new this).passable)
-	 */
-	public void calculateLocationStatus(double x, double y, double radius) {
-		double circleX, circleY;
-		this.impassable = false;
-		this.adjacent = false;
-		this.passable = true;
-		for (int i = 0; i < 360; i++) {
-			circleX = radius * Math.cos(Math.toRadians(i));
-			circleY = radius * Math.sin(Math.toRadians(i));
-			int[] objectCircleToPixels = metricToPixels(x + circleX, y
-					+ circleY);
-			int[] objectBigCircleToPixels = metricToPixels(x + circleX * 1.1, y
-					+ circleY * 1.1);
-			if (!area[objectCircleToPixels[1]][objectCircleToPixels[0]]) {
-				this.impassable = true;
-				this.adjacent = false;
-				this.passable = false;
-				return;
-			} else if (this.area[objectCircleToPixels[1]][objectCircleToPixels[0]]
-					&& !(this.area[objectBigCircleToPixels[1]][objectBigCircleToPixels[0]])) {
-				this.adjacent = true;
-				this.passable = false;
-			}
-		}
-	}
-
-	/**
 	 * Function that checks whether or not the object with provided (x,y)-coordinates and radius is adjacent to
 	 * impassable terrain or not.
 	 * An object is adjacent to impassable terrain when the circle describing the object is on impassable terrain 
@@ -667,6 +625,48 @@ public class World {
 		yResult = Math.min(yResult, this.area.length - 1);
 		int[] result = { xResult, yResult };
 		return result;
+	}
+	
+	/**
+	 * Method that checks the location status of this world for an object that stands on the given coordinates (x,y) and has the given radius.
+	 * 
+	 * @param x
+	 * 			The x-coordinate of the object
+	 * @param y
+	 * 			The y-coordinate of the object
+	 * @param radius
+	 * 			The radius of the worm
+	 * @effect	The boolean values impassable, adjacent and passable are set to the correct values for the object's position and radius.
+	 * 			| if (object.isImpassable(object.getX(), object.getY, object.getRadius())
+	 * 			|	then ((new this).impassable && !((new this).adjacent) && !((new this).passable))
+	 * 			| else if (object.isAdjacent(object.getX(), object.getY, object.getRadius())
+	 * 			|	then (!((new this).impassable) && (new this).adjacent && !((new this).passable))
+	 * 			| else if (object.isPassable(object.getX(), object.getY, object.getRadius())
+	 * 			|	then (!((new this).impassable) && !((new this).adjacent) && (new this).passable)
+	 */
+	private void calculateLocationStatus(double x, double y, double radius) {
+		double circleX, circleY;
+		this.impassable = false;
+		this.adjacent = false;
+		this.passable = true;
+		for (int i = 0; i < 360; i++) {
+			circleX = radius * Math.cos(Math.toRadians(i));
+			circleY = radius * Math.sin(Math.toRadians(i));
+			int[] objectCircleToPixels = metricToPixels(x + circleX, y
+					+ circleY);
+			int[] objectBigCircleToPixels = metricToPixels(x + circleX * 1.1, y
+					+ circleY * 1.1);
+			if (!area[objectCircleToPixels[1]][objectCircleToPixels[0]]) {
+				this.impassable = true;
+				this.adjacent = false;
+				this.passable = false;
+				return;
+			} else if (this.area[objectCircleToPixels[1]][objectCircleToPixels[0]]
+					&& !(this.area[objectBigCircleToPixels[1]][objectBigCircleToPixels[0]])) {
+				this.adjacent = true;
+				this.passable = false;
+			}
+		}
 	}
 
 	private boolean canCreateTeam() {
