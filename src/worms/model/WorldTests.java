@@ -27,11 +27,11 @@ public class WorldTests {
 
 
 	private static Random ron = new Random();
-	private static boolean [][] passable = {{true,true,true, false, false},
-						true,true, false, false},
-						true,true, false, false},
-						true,true, false, false},
-						true,true, false, false}};
+	private static boolean [][] passable = {{true, true, true, false, false},
+						{true, true, true, false, false},
+						{true, true, true, false, false},
+						{true, true, true, false, false},
+						{false, false, false, false, false}};
 	private static World world = new World(5.0,5.0, passable, ron);
 
 	@Test
