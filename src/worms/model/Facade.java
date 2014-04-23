@@ -702,7 +702,11 @@ public class Facade implements IFacade {
 			throws ModelException {
 		if (projectile == null)
 			throw new ModelException("Invalid projectile: null");
-		projectile.jump(timeStep);
+		try {
+			projectile.jump(timeStep);
+		} catch (ArithmeticException e) {
+			throw new ModelException("This worm cannot fire now");
+		}
 	}
 
 	/**
@@ -725,7 +729,8 @@ public class Facade implements IFacade {
 		try {
 			worm.jump(timeStep);
 		} catch (ArithmeticException e) {
-			throw new ModelException("This worm cannot jump or the ending point isn't valid.");
+			throw new ModelException(
+					"This worm cannot jump or the ending point isn't valid.");
 		}
 	}
 
@@ -788,7 +793,11 @@ public class Facade implements IFacade {
 	public void shoot(Worm worm, int yield) throws ModelException {
 		if (worm == null)
 			throw new ModelException("Invalid worm: null");
-		worm.shoot(yield);
+		try {
+			worm.shoot(yield);
+		} catch (ArithmeticException e) {
+			throw new ModelException("This worm cannot shoot anymore");
+		}
 	}
 
 	/**
