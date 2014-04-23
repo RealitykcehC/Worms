@@ -129,20 +129,20 @@ public class WorldTests {
 	public void testAddEmptyTeam_LegalNameCase() {
 		// 
 		assertTrue(world.addEmtyTeam("This Testname is 4 shame' but legal"));
-		assertTrue(["name is valid for uppercase letters, punctuation and numbers"], 1 == world.getTeams().size());
+		assertTrue("name is valid for uppercase letters, punctuation and numbers", 1 == world.getTeams().size());
 
 	}
 	@Test (expected = IllegalArgumentException.class)
 	public void testAddEmptyTeam_IllegalNameCase() 
 			throws Exception{
 		world.addEmptyTeam(illegalTeamName);
-		assertFalse(["The name is invalid"],world.getTeams().size()==1);
+		assertFalse("The name is invalid",world.getTeams().size()==1);
 	}
 	@Test (expected = IllegalArgumentException.class)
 	public void testAddEmptyTeam_IllegalAmountCharNameCase() 
 			throws Exception{
 		world.addEmtyTeam("H");
-		assertFalse(["The name is invalid, insufficient chars"],world.getTeams().size()==1);
+		assertFalse("The name is invalid, insufficient chars",world.getTeams().size()==1);
 	}
 	@Test (expected = IllegalAmountException.class)
 	public void testAddEmptyTeam_IllegalTeamAmountCase() 
@@ -152,7 +152,7 @@ public class WorldTests {
 
 			world.addEmptyTeam("LegalTestname");
 		}
-		assertFalse(["The amount of teams are invalid"],world.getTeams().size()==11);
+		assertFalse("The amount of teams are invalid",world.getTeams().size()==11);
 	}
 
 	@Test
@@ -271,14 +271,14 @@ public class WorldTests {
 	public void testCreateFood_IllegalTerrainCase() 
 			throws Exception{
 		world.createFood(1.0, 5.0);
-		assertFalse(["Invalid Terrain"],world.getFood().size()==1); 
+		assertFalse("Invalid Terrain",world.getFood().size()==1); 
 	}
 	@Test (expected = RuntimeException)
 	public void testCreateFood_IllegalBoundCase()
 			throws Exception{
 
 		world.createFood(illegalCoordinate, illegalCoordinate);
-		assertFalse(["Invalid Coordinates"],world.getfood().size()==1)
+		assertFalse("Invalid Coordinates",world.getfood().size()==1)
 	}
 	@Test
 	public void testCreateWorm_LegalCase() {
@@ -292,28 +292,28 @@ public class WorldTests {
 			throws Exception
 			{
 		world.createWorm(1.0, 5.0, 0.0, 0.25, "Test");
-		assertFalse(["Invalid coordinates"],world.getWorms().size()== 1);
+		assertFalse("Invalid coordinates",world.getWorms().size()== 1);
 			}
 	@Test (expected = RuntimeException)
 	public void testCreateWorm_OutOfWorldBoundsCase()
 			throws Exception
 			{
 		world.createWorm(illegalCoordinate, illegalCoordinate, 0.0, 0.25, "Test");
-		assertFalse(["Invalid coordinates, out of world bounds"],world.getWorms().size()== 1);
+		assertFalse("Invalid coordinates, out of world bounds",world.getWorms().size()== 1);
 			}
 	@Test (expected = RuntimeException)
 	public void testCreateWorm_IllegalNameCase()
 			throws Exception{
 
 		world.createWorm(0.0, 0.0, 0.0, 0.25, illegalTeamName);
-		assertFalse(["Invalid name"],1 == world.getWorms().size());
+		assertFalse("Invalid name"],1 == world.getWorms().size());
 	}
 	@Test (expected = RuntimeException)
 	public void testCreateWorm_IllegalRadiusCase()
 			throws Exception{
 
 		world.createWorm(0.0, 0.0, 0.0, illegalRadius, "Test");
-		assertFalse(["Invalid Radius"],1 == world.getWorms().size());
+		assertFalse("Invalid Radius",1 == world.getWorms().size());
 
 	}
 	@Test
@@ -325,12 +325,12 @@ public class WorldTests {
 	@Test
 	public void testLiesInWorld_IllegalOutOfBoundCase(){
 
-		assertFalse(["Out of world bounds"],world.liesInWorld(illegalCoordinate, illegalCoordinate, 0.25));
+		assertFalse("Out of world bounds",world.liesInWorld(illegalCoordinate, illegalCoordinate, 0.25));
 	}
 	@Test 
 	public void testLiesInWorld_IllegalRadiusCase(){
 
-		assertFalse(["Invalid Radius"],world.liesinWorld(1.0, 1.0, illegalRadius));
+		assertFalse("Invalid Radius",world.liesinWorld(1.0, 1.0, illegalRadius));
 	}
 	@Test
 	public void testIsGameFinished(){
