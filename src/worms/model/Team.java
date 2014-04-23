@@ -38,7 +38,7 @@ public class Team {
 			throw new IllegalArgumentException();
 		this.name = name;
 	}
-	
+
 	/**
 	 * Function that returns the name of this team.
 	 * 
@@ -56,11 +56,11 @@ public class Team {
 				liveWorms.add(liveWorm);
 		return liveWorms;	
 	}
-	
+
 	public void addTeamMember(Worm worm) {
 		this.teamMembers.add(worm);
 	}
-	
+
 	/**
 	 * Function that counts and returns the number of survivors in this team.
 	 * 
@@ -80,7 +80,7 @@ public class Team {
 		}
 		return counter;
 	}
-	
+
 	/**
 	 * Function that checks whether or not a provided name is a valid team name.
 	 * 
