@@ -322,15 +322,13 @@ public class WorldTests {
 		assertTrue(world.liesInWorld(1.0, 2.0, 0.25));
 		assertTrue(world.liesInWorld(1.0, 2.0, 1));
 	}
-	@Test(expected = IllegalArgumentException)
-	public void testLiesInWorld_IllegalOutOfBoundCase()
-			throws Exception{
+	@Test
+	public void testLiesInWorld_IllegalOutOfBoundCase(){
 
 		assertFalse(["Out of world bounds"],world.liesInWorld(illegalCoordinate, illegalCoordinate, 0.25));
 	}
-	@Test (expected = IllegalArgumentException)
-	public void testLiesInWorld_IllegalRadiusCase()
-			throws Exception{
+	@Test 
+	public void testLiesInWorld_IllegalRadiusCase(){
 
 		assertFalse(["Invalid Radius"],world.liesinWorld(1.0, 1.0, illegalRadius));
 	}
