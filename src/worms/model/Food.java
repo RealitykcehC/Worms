@@ -35,7 +35,7 @@ public class Food {
 		this.x = x;
 		this.y = y;
 	}
-	
+
 	public World getWorld() {
 		return this.world;
 	}
@@ -98,7 +98,7 @@ public class Food {
 		this.world = null;
 		this.isTerminated = true;
 	}
-	
+
 	public boolean isTerminated() {
 		return this.isTerminated;
 	}
