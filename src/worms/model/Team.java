@@ -2,17 +2,18 @@ package worms.model;
 
 import java.util.ArrayList;
 
+import be.kuleuven.cs.som.annotate.Basic;
+
 /**
  * A class which implements teams to the game.
  * Every team consists of a group of worms and every team has a name.
  * Friendly fire is allowed, which means that worms of the same team can also kill each other.
- * A game is won by a team (if only the only worms that remain are from the same team). In that case, 
- * all worms who died of that team have also won, although they are dead.
+ * A game is won by a team (if the only worms that remain are from the same team).
  * A game is won by a worm if that worm is not in a team and is the only worm remaining.
  * This means there are two ways to win a game: as an individual or as a team.
  * 
  * @author Pieter Jan Vingerhoets & Matthijs Nelissen
- * @version 0.1a
+ * @version 1.0
  */
 public class Team {
 	/**
@@ -23,15 +24,14 @@ public class Team {
 
 	/**
 	 * Constructor of the class Team.
-	 * The name of the team has to be valid.
 	 * 
 	 * @param name
 	 * 			The name of the team.
 	 * @post	This team's name has to be the provided team name
-	 * 			| (new this).getName() == name
+	 * 			| (new this).getTeamName() == name
 	 * @throws	IllegalArgumentException
 	 * 			The provided name of the team is invalid.
-	 * 			| !isValidName(name)
+	 * 			| !isValidTeamName(name)
 	 */
 	public Team(String name) throws IllegalArgumentException {
 		if (!isValidTeamName(name))
@@ -45,10 +45,17 @@ public class Team {
 	 * @return this.name
 	 * 			The name of this team
 	 */
+	@Basic
 	public String getTeamName() {
 		return this.name;
 	}
 
+	/**
+	 * Function that returns all live worms in this team (i.e. the worms who are still alive).
+	 * 
+	 * @return liveWorms
+	 * 			An ArrayList containing all of the live worms in this team
+	 */
 	public ArrayList<Worm> getLiveWormsInTeam() {
 		ArrayList<Worm> liveWorms = new ArrayList<Worm>();
 		for (Worm liveWorm : this.teamMembers)
@@ -57,6 +64,14 @@ public class Team {
 		return liveWorms;	
 	}
 
+	/**
+	 * Method that adds the provided worm to this team.
+	 * 
+	 * @param worm
+	 * 			The worm that has to be added to this team
+	 * @post	The provided worm has to have been added to this team.
+	 * 			| (new worm).getTeamName().equals(this.getTeamName())
+	 */
 	public void addTeamMember(Worm worm) {
 		this.teamMembers.add(worm);
 	}
@@ -66,15 +81,10 @@ public class Team {
 	 * 
 	 * @return counter
 	 * 			The number of survivors in this team
-	 * @throws	NullPointerException
-	 * 			The team must exist, otherwise an exception has to be thrown.
-	 * 			| teamMembers == null
 	 */
-	public int countSurvivors() throws NullPointerException {
-		if (teamMembers == null)
-			throw new NullPointerException();
+	public int countSurvivors() {
 		int counter = 0;
-		for (Worm worm : teamMembers) {
+		for (Worm worm : this.teamMembers) {
 			if (worm.getActionPoints() > 0 && worm.getHitPoints() > 0)
 				counter++;
 		}
