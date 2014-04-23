@@ -9,7 +9,7 @@ import worms.model.Worm;
  * A class that implements the Interface IFacade.
  * 
  * @author Pieter Jan Vingerhoets & Mathijs Nelissen
- * @version 1.0
+ * @version 2.0
  */
 public class Facade implements IFacade {
 
@@ -25,11 +25,16 @@ public class Facade implements IFacade {
 	 * @throws	ModelException
 	 * 			The world is an empty reference (a null pointer), an exception has to be thrown.
 	 * 			| world == null
+	 * @throws	ModelException
+	 * 			The name of the new team is null or less than 2 characters in length.
+	 * 			| !Team.isValidTeamName(newName)
 	 */
 	@Override
 	public void addEmptyTeam(World world, String newName) throws ModelException {
 		if (world == null)
 			throw new ModelException("Invalid world: null");
+		if (!Team.isValidTeamName(newName))
+			throw new ModelException("Invalid team name");
 		world.addEmptyTeam(newName);
 	}
 
@@ -125,13 +130,20 @@ public class Facade implements IFacade {
 	 * @throws	ModelException
 	 * 			The world is an empty reference (a null pointer), an exception has to be thrown.
 	 * 			| world == null
+	 * @throws	ModelException
+	 * 			The game has already been started.
+	 * 			| world.isStarted()
 	 */
 	@Override
 	public Food createFood(World world, double x, double y)
 			throws ModelException {
 		if (world == null)
 			throw new ModelException("Invalid world: null");
-		return world.createFood(x, y);
+		try {
+			return world.createFood(x, y);
+		} catch (RuntimeException e) {
+			throw new ModelException("The game has already been started");
+		}
 	}
 
 	/**
@@ -144,15 +156,22 @@ public class Facade implements IFacade {
 	 * @param passableMap
 	 * 			The array that describes the passable/ impassable parts of the map
 	 * @param random
-	 * 			...
+	 * 			A random number generator, seeded with the value obtained from the command line or from GUIOptions,
+	 *  		that can be used to randomize aspects of the world in a repeatable way.
 	 * @return new World(width, height, passableMap, random)
 	 * 			The newly created world with the provided properties
+	 * @throws	ModelException
+	 * 			Width and/or height are invalid.
+	 * 			| !World.isValidWidth(width) || !isValidHeight(height)
 	 */
-	// TODO ...
 	@Override
 	public World createWorld(double width, double height,
-			boolean[][] passableMap, Random random) {
-		return new World(width, height, passableMap, random);
+			boolean[][] passableMap, Random random) throws ModelException {
+		try {
+			return new World(width, height, passableMap, random);
+		} catch (IllegalArgumentException e) {
+			throw new ModelException("Invalis width and/or height");
+		}
 	}
 
 	/**
@@ -177,13 +196,20 @@ public class Facade implements IFacade {
 	 * @throws	ModelException
 	 * 			The world is an empty reference (a null pointer), an exception has to be thrown.
 	 * 			| world == null
+	 * @throws	ModelException
+	 * 			The game has already been started.
+	 * 			| world.isStarted()
 	 */
 	@Override
 	public Worm createWorm(World world, double x, double y, double direction,
 			double radius, String name) throws ModelException {
 		if (world == null)
 			throw new ModelException("Invalid world: null");
-		return world.createWorm(x, y, direction, radius, name);
+		try {
+			return world.createWorm(x, y, direction, radius, name);
+		} catch (RuntimeException e) {
+			throw new ModelException("The game has already been started");
+		}
 	}
 
 	/**
@@ -277,7 +303,7 @@ public class Facade implements IFacade {
 	}
 
 	/**
-	 * Function that returns the (x,y)-coordinates of the provided projectile at a given time.
+	 * Function that returns the (x,y)-coordinates of the provided projectile at a given time in its jump.
 	 * 
 	 * @param projectile
 	 * 			The projectile whose coordinates have to be returned after the provided time
@@ -303,7 +329,7 @@ public class Facade implements IFacade {
 	 * @param projectile
 	 * 			The projectile that will execute its jump
 	 * @param timeStep
-	 * 			The time that the projectile will not pass any impassable terrain
+	 * 			The time interval in which the projectile will not pass any impassable terrain
 	 * @return projectile.getJumpTime(timeStep)
 	 * 			The time the provided projectile will take to execute its jump
 	 * @throws	ModelException
@@ -324,7 +350,7 @@ public class Facade implements IFacade {
 	 * @param worm
 	 * 			The worm that will execute its jump
 	 * @param timeStep
-	 * 			The time that the provided worm won't hit any impassable terrain
+	 * 			The time interval in which the worm will not pass any impassable terrain
 	 * @return worm.getJumpTime(timeStep)
 	 * 			The time that it takes the provided worm to execute its jump
 	 * @throws	ModelException
@@ -426,11 +452,7 @@ public class Facade implements IFacade {
 	public String getTeamName(Worm worm) throws ModelException {
 		if (worm == null)
 			throw new ModelException("Invalid worm: null");
-		try {
-			return worm.getTeamName();
-		} catch (NullPointerException e) {
-			throw new ModelException("Invalid team name");
-		}
+		return worm.getTeamName();
 	}
 
 	/**
@@ -588,7 +610,7 @@ public class Facade implements IFacade {
 
 	/**
 	 * Function that checks whether or not an object with provided (x,y)-coordinates and radius is 
-	 * adjacent in the provided world.
+	 * adjacent to impassable terrain in the provided world.
 	 * 
 	 * @param world
 	 * 			The provided world in which the coordinates have to be tested
@@ -619,7 +641,7 @@ public class Facade implements IFacade {
 	 * Function that checks whether the provided worm is still alive or not.
 	 * 
 	 * @param worm
-	 * 			The worm whose vitals have to be checked
+	 * 			The worm for which the vitals have to be checked
 	 * @return true
 	 * 			The provided worm's still alive
 	 * @return false
@@ -636,7 +658,7 @@ public class Facade implements IFacade {
 	}
 
 	/**
-	 * Function that checks whether or not the game is finished (i.e. there's a winner) in the 
+	 * Function that checks whether or not the game is finished (i.e. there's a winner or winning team) in the 
 	 * provided world.
 	 * 
 	 * @param world
@@ -657,7 +679,7 @@ public class Facade implements IFacade {
 	}
 
 	/**
-	 * Function that checks whether or not an object with coordinates (x,y) and a radius is on 
+	 * Function that checks whether or not an object with coordinates (x,y) and a radius is located on 
 	 * impassable terrain in the provided world.
 	 * 
 	 * @param world
@@ -690,12 +712,16 @@ public class Facade implements IFacade {
 	 * @param projectile
 	 * 			The projectile that has to jump
 	 * @param timeStep
-	 * 			The time that the projectile will not hit any impassable terrain
+	 * 			The time interval in which the projectile will not pass any impassable terrain
 	 * @effect	The projectile has to have traveled the needed distance.
-	 * 			| new.projectile.getX() == projectile.getX() + projectile.getJumpDistance()
+	 * 			| (new projectile).getX() == endjumpJumpStep[0]
+	 * 			|	&& (new projectile).getY() == endjumpJumpStep[1]
 	 * @throws	ModelException
 	 * 			The projectile is an empty reference (a null pointer), an exception has to be thrown.
 	 * 			| projectile == null
+	 * @throws	ModelException
+	 * 			The provided projectile can't jump.
+	 * 			| !projectile.canJump()
 	 */
 	@Override
 	public void jump(Projectile projectile, double timeStep)
@@ -715,12 +741,16 @@ public class Facade implements IFacade {
 	 * @param worm
 	 * 			The worm that has to jump
 	 * @param timeStep
-	 * 			The time that the worm will not hit any impassable terrain
+	 * 			The time interval in which the worm will not pass any impassable terrain
 	 * @effect	The worm has to have traveled the needed distance.
-	 * 			| new.worm.getX() == worm.getX() + worm.getJumpDistance()
+	 * 			| (new worm).getX() == endjumpJumpStep[0]
+	 * 			|	(new worm).getY() == endjumpJumpStep[1]
 	 * @throws	ModelException
 	 * 			The worm is an empty reference (a null pointer), an exception has to be thrown.
 	 * 			| worm == null
+	 * @throws	ModelException
+	 * 			The provided worm can't jump.
+	 * 			| !worm.canJump()
 	 */
 	@Override
 	public void jump(Worm worm, double timeStep) throws ModelException {
@@ -729,8 +759,7 @@ public class Facade implements IFacade {
 		try {
 			worm.jump(timeStep);
 		} catch (ArithmeticException e) {
-			throw new ModelException(
-					"This worm cannot jump or the ending point isn't valid.");
+			throw new ModelException("This worm cannot jump or the ending point isn't valid.");
 		}
 	}
 
@@ -740,10 +769,13 @@ public class Facade implements IFacade {
 	 * @param worm
 	 * 			The worm that has to move
 	 * @effect	The provided worm should have moved.
-	 * 			| new.worm.getX() != worm.getX() || new.worm.getY() != worm.getY()
+	 * 			| (new worm).getX() != worm.getX() || (new worm).getY() != worm.getY()
 	 * @throws	ModelException
 	 * 			The worm is an empty reference (a null pointer), an exception has to be thrown.
 	 * 			| worm == null
+	 * @throws	ModelException
+	 * 			The provided worm can't move.
+	 * 			| !worm.canMove()
 	 */
 	@Override
 	public void move(Worm worm) throws ModelException {
@@ -760,9 +792,9 @@ public class Facade implements IFacade {
 	 * Function that makes the provided worm select its next weapon.
 	 * 
 	 * @param worm
-	 * 			The worm that as to switch weapons
-	 * @post	The weapon should have changed.
-	 * 			| new.worm.getSelectedWeapon() != worm.getSelectedWeapon()
+	 * 			The worm that has to switch weapons
+	 * @post	The weapon should have changed weapons.
+	 * 			| (new worm).getSelectedWeapon() != worm.getSelectedWeapon()
 	 * @throws	ModelException
 	 * 			The worm is an empty reference (a null pointer), an exception has to be thrown.
 	 * 			| worm == null
@@ -782,22 +814,15 @@ public class Facade implements IFacade {
 	 * 			The worm that has to shoot
 	 * @param yield
 	 * 			The yield of the projectile
-	 * @effect	A projectile should be fired.
-	 * 			| ...
 	 * @throws	ModelException
 	 * 			The worm is an empty reference (a null pointer), an exception has to be thrown.
 	 * 			| worm == null
 	 */
-	// TODO ...
 	@Override
 	public void shoot(Worm worm, int yield) throws ModelException {
 		if (worm == null)
 			throw new ModelException("Invalid worm: null");
-		try {
-			worm.shoot(yield);
-		} catch (ArithmeticException e) {
-			throw new ModelException("This worm cannot shoot anymore");
-		}
+		worm.shoot(yield);
 	}
 
 	/**
@@ -806,37 +831,27 @@ public class Facade implements IFacade {
 	 * @param world
 	 * 			The world in which the game has to start
 	 * @effect	The game has to have started after execution of this method.
-	 * 			| ...
+	 * 			| (new world).isStarted()
 	 * @throws	ModelException
 	 * 			The world is an empty reference (a null pointer), an exception has to be thrown.
 	 * 			| world == null
 	 */
-	// TODO ...
 	@Override
 	public void startGame(World world) throws ModelException {
 		if (world == null)
 			throw new ModelException("Invalid world: null");
-		try {
-			world.startGame();
-		} catch (RuntimeException e) {
-			throw new ModelException("No worms in the world.");
-		}
+		world.startGame();
 	}
 
 	/**
-	 * Function that starts the next turn in the provided world.
+	 * Function that starts the next worm's turn in the provided world.
 	 * 
 	 * @param world
 	 * 			The world in which a next turn has to be started
-	 * @effect 	The next turn has to be started, i.e. the next worm has to have been selected, its 
-	 * 			Hit Points have to be increased by 10, respecting the limit of Hit Points and the 
-	 * 			Action Points of that worm have to be reset to the maximum amount of Action Points.
-	 * 			| ...
 	 * @throws	ModelException
 	 * 			The world is an empty reference (a null pointer), an exception has to be thrown.
 	 * 			| world == null
 	 */
-	// TODO ...
 	@Override
 	public void startNextTurn(World world) throws ModelException {
 		if (world == null)
@@ -883,12 +898,12 @@ public class Facade implements IFacade {
 	}
 
 	/**
-	 * Function that returns the x,y-coordinates of the given worm in its jump at time t.
+	 * Function that returns the (x,y)-coordinates of the given worm in its jump at time t.
 	 * 
 	 * @param worm
-	 * 			The worm whose x,y-coordinates have to be calculated in its jump at time t.
+	 * 			The worm whose (x,y)-coordinates have to be calculated in its jump at time t.
 	 * @param t
-	 * 			The time t for which the x,y-coordinates of the given worm have to be be calculated.
+	 * 			The time t for which the (x,y)-coordinates of the given worm have to be be calculated.
 	 * @throws	ModelException
 	 * 			If worm is an empty reference (a null pointer), an exception has to be thrown.
 	 * 			| worm == null
@@ -1042,17 +1057,19 @@ public class Facade implements IFacade {
 	 * 			| worm == null
 	 * @throws	ModelException
 	 * 			If the new name is invalid, an exception has to be thrown.
-	 * 			| !isValidName(newName)
+	 * 			| !Worm.isValidName(newName)
 	 */
 	@Override
 	public void rename(Worm worm, String newName) throws ModelException {
 		if (worm == null)
 			throw new ModelException("Invalid worm: null");
+		if (!Worm.isValidName(newName))
+			throw new ModelException("Invalid name");
 		worm.rename(newName);
 	}
 
 	/**
-	 * Function that sets the radius of the given worm to the radius that is given.
+	 * Function that sets the radius of the given worm to the given radius.
 	 * 
 	 * @param worm
 	 * 			The worm whose radius has to be set to the provided one.
@@ -1066,14 +1083,20 @@ public class Facade implements IFacade {
 	 * 			If worm is an empty reference (a null pointer), an exception has to be thrown.
 	 * 			| worm == null
 	 * @throws	ModelException
-	 * 			The new radius is invalid.
-	 * 			| !isValidRadius(newRadius) || !isValidMass(worm.adjustMass(newRadius).getMass())
+	 * 			The new radius is invalid or the new radius is conflicting with the new mass for that radius.
+	 * 			| !Worm.isValidRadius(newRadius)
 	 */
 	@Override
 	public void setRadius(Worm worm, double newRadius) throws ModelException {
 		if (worm == null)
 			throw new ModelException("Invalid worm: null");
-		worm.setRadius(newRadius);
+		if (!Worm.isValidRadius(newRadius))
+			throw new ModelException("Invalid new radius");
+		try {
+			worm.setRadius(newRadius);
+		} catch (IllegalArgumentException e) {
+			throw new ModelException("The new radius is conficting with the new mass for that radius");
+		}
 	}
 
 	/**
