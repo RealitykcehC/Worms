@@ -267,13 +267,13 @@ public class WorldTests {
 		assertEquals(1, world.getFood().size());
 
 	}
-	@Test (expected = IllegalArgumentException)
+	@Test (expected = RuntimeException)
 	public void testCreateFood_IllegalTerrainCase() 
 			throws Exception{
 		world.createFood(1.0, 5.0);
 		assertFalse(["Invalid Terrain"],world.getFood().size()==1); 
 	}
-	@Test (expected = IllegalArgumentException)
+	@Test (expected = RuntimeException)
 	public void testCreateFood_IllegalBoundCase()
 			throws Exception{
 
@@ -287,28 +287,28 @@ public class WorldTests {
 		world.createWorm(0.0, 0.0, 0.0, 0.25, "Test");
 		assertEquals(world.getWorms().size() == 2)
 	}
-	@Test (expected = IllegalArgumentException)
+	@Test (expected = RuntimeException)
 	public void testCreateWorm_IllegalTerrainCase()
 			throws Exception
 			{
 		world.createWorm(1.0, 5.0, 0.0, 0.25, "Test");
 		assertFalse(["Invalid coordinates"],world.getWorms().size()== 1);
 			}
-	@Test (expected = IllegalArgumentException)
+	@Test (expected = RuntimeException)
 	public void testCreateWorm_OutOfWorldBoundsCase()
 			throws Exception
 			{
 		world.createWorm(illegalCoordinate, illegalCoordinate, 0.0, 0.25, "Test");
 		assertFalse(["Invalid coordinates, out of world bounds"],world.getWorms().size()== 1);
 			}
-	@Test (expected = IllegalArgumentException)
+	@Test (expected = RuntimeException)
 	public void testCreateWorm_IllegalNameCase()
 			throws Exception{
 
 		world.createWorm(0.0, 0.0, 0.0, 0.25, illegalTeamName);
 		assertFalse(["Invalid name"],1 == world.getWorms().size());
 	}
-	@Test (expected = IllegalArgumentException)
+	@Test (expected = RuntimeException)
 	public void testCreateWorm_IllegalRadiusCase()
 			throws Exception{
 
