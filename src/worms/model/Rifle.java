@@ -10,22 +10,17 @@ import worms.model.Worm;
  * have to be overridden.
  * The properties specific to the rifle are also declared in this class.
  * 
- * @invar	The mass of the rifle projectile has to be valid at all times during the execution of the game. This condition is not imposed in the superclass, because it only 
- * 			has dummy implementations of the functions, with some invalid properties. Those invalid properties are made concrete in the subclasses. A worm will never be able 
- * 			to shoot an instance of the class Projectile, only of the subclasses of Projectile.
- * 			The class Worm already has a good implementation of the method required to check this.
- * 			| Worm.isValidMass(this.getMass())
  * @author Pieter Jan Vingerhoets & Matthijs Nelissen
- * @version 0.1a
+ * @version 1.0
  */
 public class Rifle extends Projectile {
 	/**
 	 * Declaration of variables.
 	 */
-	private final int actionPointsCost = 10;
-	private final int hitPointsReduce = 20;
-	private final double mass = .01;
-	private final String weaponName = "Rifle";
+	private final int ACTION_POINTS_COST = 10;
+	private final int HIT_POINTS_REDUCE = 20;
+	private final double MASS = .01;
+	private final String WEAPON_NAME = "Rifle";
 	private double force;
 	private double upperForce = 1.5, lowerForce = 1.5;
 
@@ -35,6 +30,20 @@ public class Rifle extends Projectile {
 	 * 
 	 * @param worm
 	 * 			The worm that has to shoot
+	 * @post	The given worm must be equal to the worm that has to shoot.
+	 * 			| (new this).getWorm() == worm
+	 * @post	The given x must be equal to the x-coordinate of the worm that is being created.
+	 * 			| (new this).getX() == worm.getX() + (Math.cos(worm.getOrientation()) * worm.getRadius())
+	 * @post	The given y must be equal to the y-coordinate of the worm that is being created.
+	 * 			| (new this).getY() == worm.getY() + (Math.sin(worm.getOrientation()) * worm.getRadius())
+	 * @post	The given direction has to be equal to the orientation of the worm that is being created.
+	 * 			The given direction first has to be recalculated to an angle in the interval [0, 2 * Math.PI[
+	 * 			| (new this).getOrientation() == worm.recalculateOrientation(worm.getOrientation())
+	 * @throws	IllegalArgumentException
+	 * 			The x- and y-coordinate of this projectile have to be valid x- and y-coordinates. If they are not, an exception has to be thrown.
+	 * 			The functions concerning checking valid x- and y-coordinates are written in the class Worm.
+	 * 			| !Worm.isValidX(worm.getX() + (Math.cos(worm.getOrientation()) * worm.getRadius())) || 
+	 *			|	!Worm.isValidY(worm.getY() + (Math.sin(worm.getOrientation()) * worm.getRadius()))
 	 */
 	public Rifle(Worm worm) {
 		super(worm);
@@ -43,67 +52,79 @@ public class Rifle extends Projectile {
 	/**
 	 * Function which returns the cost of Action Points to shoot with the rifle.
 	 * 
-	 * @return this.actionPointsCost
+	 * @return this.ACTION_POINTS_COST
 	 * 			The cost of Action Points to shoot the rifle
 	 */
 	@Override
 	@Basic
 	public int getActionPointsCost() {
-		return this.actionPointsCost;
+		return this.ACTION_POINTS_COST;
 	}
 
 	/**
 	 * Function which returns the amount of Hit Points that have to be subtracted from the current amount of Hit Points of the worm that is hit by the rifle bullet.
 	 * 
-	 * @return this.hitPointsReduce
+	 * @return this.HIT_POINTS_REDUCE
 	 * 			The amount of Hit Points that have to be subtracted from the amount of Hit Points of the worm that is hit.
 	 */
 	@Override
 	@Basic
 	public int getHitPointsReduction() {
-		return this.hitPointsReduce;
+		return this.HIT_POINTS_REDUCE;
 	}
 
 	/**
 	 * Function which returns the mass of the rifle bullet.
 	 * 
-	 * @return this.mass
+	 * @return this.MASS
 	 * 			The mass of the bullet
 	 */
 	@Override
 	@Basic
 	public double getMass() {
-		return this.mass;
+		return this.MASS;
 	}
-
+	
+	/**
+	 * Function that returns the name of this weapon.
+	 * 
+	 * @return this.WEAPON_NAME
+	 * 			The name of this weapon
+	 */
+	@Basic
+	@Override
+	public String getWeaponName() {
+		return this.WEAPON_NAME;
+	}
+	
 	/**
 	 * Function which returns the initial force of the bullet from a rifle, just before its launch.
 	 * 
 	 * @return this.force
 	 * 			The initial force of the bullet of a rifle.
 	 */
-	@Basic
 	@Override
 	public double getForce() {
 		return this.force;
 	}
-
+	
 	/**
-	 * Function that returns the name of this weapon.
+	 * Function that calculates and returns the radius of a rifle bullet.
 	 * 
-	 * @return this.weaponName
-	 * 			The name of this weapon
+	 * @return radius
+	 * 			The radius of the bullet
 	 */
 	@Override
-	public String getWeaponName() {
-		return this.weaponName;
-	}
-	
-	@Override
 	public double getRadius() {
-		return Math.cbrt((3 * (mass / density)) / (4 * Math.PI));
+		return Math.cbrt((3 * (MASS / DENSITY)) / (4 * Math.PI));
 	}
 	
+	/**
+	 * Function that sets the force to the correct force, using the yield that is determined when the worm wants to shoot.
+	 * 
+	 * @post	The force has to be set to the correct amount, using the propulsion yield from the shoot.
+	 * 			| (new this).getForce() == this.lowerForce + (this.upperForce - this.lowerForce) * (yield / 100)
+	 */
 	@Override
 	public void setForce(int yield) {
 		this.force = this.lowerForce + (this.upperForce - this.lowerForce) * (yield / 100);
