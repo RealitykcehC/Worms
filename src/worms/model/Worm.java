@@ -621,7 +621,7 @@ public class Worm {
 			while (!this.getWorld().isAdjacent(this.getX(), this.getY(),
 					this.getRadius())) {
 				this.y -= Util.DEFAULT_EPSILON;
-				if (!(0.0 <= this.getY() && this.getY() <= this.getWorld()
+				if (!(0.0 <= this.getY() && this.getY() <= this.getWorld().getHeight())
 						.getHeight())) {
 					this.terminate();
 					return;
