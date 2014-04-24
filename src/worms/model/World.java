@@ -336,7 +336,7 @@ public class World {
 			String name) throws RuntimeException {
 		if (this.isStarted())
 			throw new RuntimeException();
-		if (!this.liesInWorld(x, y, Food.radius) && this.isImpassable(x, y, Food.radius))
+		if(!isValidWidth(x)||!isValidHeight(y))
 			throw new IllegalArgumentException();
 		Worm worm = new Worm(this, x, y, direction, radius, name);
 		this.collectionOfWorms.add(worm);
