@@ -3,8 +3,6 @@ package worms.model;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.Random;
 
 import org.junit.Test;
@@ -16,7 +14,7 @@ import org.junit.Test;
  * The methods are tested for legal and illegal cases
  * 
  * @author Mathijs Nelissen & Pieterjan Vingerhoets 
- * version 0.3
+ * version 0.4
  */
 
 public class WorldTests {
@@ -27,9 +25,11 @@ public class WorldTests {
 
 	/**	passable = 	- - - / / 
 					- - - / /
-					- - - / /		*/
+					- - - / /
+					- - - / /
+					/ / / / / 		*/
 	private static Random ran = new Random();
-	private static boolean [][] passable = {{true,true,true, false, false},{true, true, true, false, false},{true,true,true, false, false},{true,true,true, false, false},{true,true,true, false, false}};
+	private static boolean [][] passable = {{true,true,true, false, false},{true, true, true, false, false},{true,true,true, false, false},{true,true,true, false, false},{false, false, false, false, false}};
 	
 
 	@Test
@@ -53,9 +53,9 @@ public class WorldTests {
 	@Test
 	public void testIsValidWidth_LegalCase() {
 		World world = new World(5.0,5.0, passable, ran);
-		assertTrue(world.isValidWidth(world.getWidth()));
+		assertTrue(World.isValidWidth(world.getWidth()));
 		world = new World(0.0,0.0, passable, ran);
-		assertTrue(world.isValidWidth(world.getWidth()));
+		assertTrue(World.isValidWidth(world.getWidth()));
 	}
 	@SuppressWarnings("unused")
 	@Test 
@@ -71,16 +71,16 @@ public class WorldTests {
 	@Test
 	public void testIsValidHeight_LegalCase() {
 		World world = new World(5.0,5.0, passable, ran);
-		assertTrue(world.isValidHeight(world.getHeight()));
+		assertTrue(World.isValidHeight(world.getHeight()));
 		world= new World(0.0,0.0, passable , ran);
-		assertTrue(world.isValidHeight(world.getHeight()));
+		assertTrue(World.isValidHeight(world.getHeight()));
 	}
 	@Test
 	public void testIsValidHeight_IllegalCoordinateCase(){
 
 		World testWorld = new World (illegalCoordinate*10.0, illegalCoordinate, passable, ran);
-		assertFalse("Height is invalid, out of the world bounds",testWorld.isValidHeight(testWorld.getHeight()));
-		assertFalse("Width is invalid, out of the world bounds",testWorld.isValidWidth(testWorld.getWidth()));
+		assertFalse("Height is invalid, out of the world bounds",World.isValidHeight(testWorld.getHeight()));
+		assertFalse("Width is invalid, out of the world bounds",World.isValidWidth(testWorld.getWidth()));
 
 	}
 
@@ -144,7 +144,7 @@ public class WorldTests {
 
 			world.addEmptyTeam("LegalTestname");
 		}
-		assertFalse("The amount of teams are invalid",world.getTeams().size()==11);
+		assertFalse("The amount of teams are invalid",world.getTeams().size()<10);
 	}
 
 	@Test
@@ -189,6 +189,7 @@ public class WorldTests {
 	public void testGetCurrentWorm() {
 		World world = new World(5.0,5.0, passable, ran);
 		world.addWormToWorld();
+		world.startGame();
 		assertSame(((ArrayList<Worm>)world.getWorms()).get(0), world.getCurrentWorm());
 	}
 	@Test
@@ -202,13 +203,8 @@ public class WorldTests {
 		World world = new World(5.0,5.0, passable, ran);
 		world.createWorm(1.0, 1.0, 1.0, 1.0, "Test");
 		world.addWormToWorld();
-		world.addWormToWorld();
-		for (Worm worm : world.getWorms()){
-			if (worm !=world.getCurrentWorm()){
-				worm.setHitPoints(0);
-			}
-		}
-		assertSame(world.getCurrentWorm(), world.getWinner());
+		((ArrayList<Worm>)world.getWorms()).get(1).setHitPoints(0);
+		assertSame(((ArrayList<Worm>)world.getWorms()).get(0), world.getWinner());
 	}
 	@Test
 	public void testGetWorms() {
@@ -264,7 +260,7 @@ public class WorldTests {
 		World world = new World(5.0,5.0, passable, ran);
 		world.addEmptyTeam("Hey");
 		world.addEmptyTeam("Hela");
-		world.addEmptyTeam(" ");
+		world.addEmptyTeam("How");
 
 		assertEquals(3, world.getTeams().size(), 0.1);
 	}
@@ -272,12 +268,11 @@ public class WorldTests {
 	@Test
 	public void testCreateFood_LegalTerrainCase() {
 		World world = new World(5.0,5.0, passable, ran);
-		world.createFood(4.8, 1.0);
+		world.createFood(3.0, 1.0);
 		assertEquals(1, world.getFood().size());
 	}
 	@Test 
-	public void testCreateFood_IllegalTerrainCase() 
-			throws Exception{
+	public void testCreateFood_IllegalTerrainCase() {
 		World world = new World(5.0,5.0, passable, ran);
 		world.createFood(1.0, 5.0);
 		assertFalse("Invalid Terrain",world.getFood().size()==1); 
@@ -294,7 +289,7 @@ public class WorldTests {
 		World world = new World(5.0,5.0, passable, ran);
 		world.createWorm(1.0, 1.0, 0.0, 0.25, "Test");
 		assertEquals(world.getWorms().size(),1);
-		world.createWorm(0.0, 0.0, 0.0, 0.25, "Test");
+		world.createWorm(1.0, 1.0, 0.0, 0.25, "Test");
 		assertEquals(world.getWorms().size(),2);
 	}
 	@Test 
@@ -318,7 +313,7 @@ public class WorldTests {
 		World world = new World(5.0,5.0, passable, ran);
 		try{
 		world.createWorm(0.0, 0.0, 0.0, 0.25, illegalTeamName);
-		}catch (IllegalArgumentException exc){
+		}catch (RuntimeException exc){
 			fail("Invalid name");
 		}
 	}
@@ -327,7 +322,7 @@ public class WorldTests {
 		World world = new World(5.0,5.0, passable, ran);
 		try{
 		world.createWorm(0.0, 0.0, 0.0, illegalRadius, "Test");
-		}catch(IllegalArgumentException exc){
+		}catch(RuntimeException exc){
 			fail("Invalid Radius");
 		}
 	}
