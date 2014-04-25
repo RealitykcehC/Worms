@@ -69,26 +69,11 @@ public class Team {
 	 * 
 	 * @param worm
 	 * 			The worm that has to be added to this team
-	 * @post	The provided worm has to have been added to this team.
+	 * @post	The provided worm must be added to this team.
 	 * 			| (new worm).getTeamName().equals(this.getTeamName())
 	 */
 	public void addTeamMember(Worm worm) {
 		this.teamMembers.add(worm);
-	}
-
-	/**
-	 * Function that counts and returns the number of survivors in this team.
-	 * 
-	 * @return counter
-	 * 			The number of survivors in this team
-	 */
-	public int countSurvivors() {
-		int counter = 0;
-		for (Worm worm : this.teamMembers) {
-			if (worm.getActionPoints() > 0 && worm.getHitPoints() > 0)
-				counter++;
-		}
-		return counter;
 	}
 
 	/**
