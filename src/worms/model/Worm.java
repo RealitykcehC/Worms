@@ -2,6 +2,7 @@ package worms.model;
 
 import java.util.ArrayList;
 
+import worms.gui.GUIConstants;
 import worms.util.Util;
 import be.kuleuven.cs.som.annotate.Basic;
 
@@ -41,21 +42,20 @@ public class Worm {
 	/**
 	 * Declaration of variables.
 	 */
-	private static final double MINIMAL_RADIUS = .25;
-	private static final double LOWER_BOUND_MASS_EXCLUDED = 0;
-	private static final double LOWER_BOUND_X = World.LOWER_BOUND_X;
-	private static final double UPPER_BOUND_X = World.UPPER_BOUND_X;
-	private static final double LOWER_BOUND_Y = World.LOWER_BOUND_Y;
-	private static final double UPPER_BOUND_Y = World.UPPER_BOUND_Y;
+	public static final double LOWER_BOUND_X = World.LOWER_BOUND_X;
+	public static final double UPPER_BOUND_X = World.UPPER_BOUND_X;
+	public static final double LOWER_BOUND_Y = World.LOWER_BOUND_Y;
+	public static final double UPPER_BOUND_Y = World.UPPER_BOUND_Y;
 	public final double GRAV_CST = 9.80665;
 	public final double DENSITY = 1062.0;
+	public static final double MINIMAL_RADIUS = .25;
+	private static final double LOWER_BOUND_MASS_EXCLUDED = 0;
 	private double x, y, direction, radius, mass;
 	private int actionPoints, maxActionPoints;
 	private int hitPoints, maxHitPoints;
 	private int indexOfCurrentWeapon;
 	private boolean isTerminated = false;
 	private String name;
-	@SuppressWarnings("unused")
 	private Projectile projectile;
 	private Team team;
 	private World world;
@@ -295,15 +295,14 @@ public class Worm {
 	public double getJumpTime(double timeStep) {
 		double newX = 0, newY = 0;
 		double[] jumpStep = new double[2];
-		double totalJumpTime = 0;
+		double jumpTime = 0;
 		do {
-			jumpStep = this.getJumpStep(totalJumpTime);
+			jumpStep = this.getJumpStep(jumpTime);
 			newX = jumpStep[0];
 			newY = jumpStep[1];
-			totalJumpTime += timeStep;
-		} while (this.getRadius() >= Math.sqrt(Math.pow(this.getX() - newX, 2)
-				+ Math.pow(this.getY() - newY, 2))|| !(this.isJumpFinished(newX, newY)));
-		return totalJumpTime;
+			jumpTime += timeStep;
+		} while (!this.isJumpFinished(newX, newY));
+		return jumpTime;
 	}
 
 	/**
@@ -359,7 +358,7 @@ public class Worm {
 	 * 			The current weapon of this worm
 	 */
 	public Projectile getProjectile() {
-		return this.collectionOfWeapons.get(this.indexOfCurrentWeapon);
+		return this.projectile;
 	}
 
 	/**
@@ -436,7 +435,6 @@ public class Worm {
 
 	/**
 	 * Function that adjusts the current Action Points of this worm.
-	 * This method is only used for the JUnit test cases.
 	 * 
 	 * @param newActionPoints
 	 * 			The new number of Action Points.
@@ -474,7 +472,7 @@ public class Worm {
 			this.hitPoints = newHitPoints;
 		if (newHitPoints < 0) {
 			this.hitPoints = 0;
-			this.getWorld().removeWormFromWorld(this);;
+			this.getWorld().removeWormFromWorld(this);
 		}
 	}
 
@@ -483,7 +481,7 @@ public class Worm {
 	 * 
 	 * @param newProjectile
 	 * 			The new weapon that has to be set
-	 * @post	The weapon has to have been changed.
+	 * @post	The weapon must be changed.
 	 * 			| (new this).getProjectile() == newProjectile
 	 */
 	public void setProjectile(Projectile newProjectile) {
@@ -527,7 +525,7 @@ public class Worm {
 	/**
 	 * Method that selects the next weapon in the ArrayList of weapons.
 	 * 
-	 * @post	The next weapon has to have been selected and the index that keeps track of the current 
+	 * @post	The next weapon must be selected and the index that keeps track of the current 
 	 * 			weapon has to be set accordingly.
 	 * 			| (new this).indexOfCurrentWeapon = (this.collectionOfWeapons.indexOf(this
 	 * 			|	.getProjectile()) + 1) % this.collectionOfWeapons.size() && (new this).getProjectile() 
@@ -556,8 +554,7 @@ public class Worm {
 
 	/**
 	 * Method that executes the move of this worm, if it is allowed to (is able to) move.
-	 * The worm will eat food automatically, because of the fall method that is called in 
-	 * this method.
+	 * The worm will eat food after its move and after its fall.
 	 * This method uses an auxiliary method, moveEvaluation. This method doesn't change any properties of this worm 
 	 * whatsoever, but gives an evaluation array of the worm's move. An adjacent ending position is always preferred 
 	 * to the other options for ending positions. The first element of the array contains the angle that gives the 
@@ -590,6 +587,8 @@ public class Worm {
 		this.y = this.getY() + moveEval[1] * Math.sin(moveEval[0]);
 		this.setActionPoints(this.getActionPoints()
 				- (int) Math.ceil(this.getTotalStepCostForMove(moveEval[0])));
+		this.fall();
+		this.eatFood();
 		if (!this.getWorld().liesInWorld(this.getX(), this.getY(), this.getRadius()))
 			this.getWorld().removeWormFromWorld(this);
 	}
@@ -633,14 +632,17 @@ public class Worm {
 		this.direction = recalculateAngle(recalculateAngle(angle)
 				+ this.getOrientation());
 		f = (int) Math.round(2 * Math.PI / recalculateAngle(angle));
-		this.actionPoints -= Math.abs(Math.round(60 / f));
+		this.setActionPoints(this.getActionPoints() - Math.abs(Math.round(60 / f)));
 	}
 
 	/**
 	 * Function that makes this worm jump in the direction he's currently facing.
-	 * The worm has to have some action points left, otherwise he cannot make the jump.
+	 * This worm has to have some Action Points left, otherwise he cannot make the jump.
 	 * He also cannot be located at impassable terrain before jumping.
 	 * All action points are being consumed when a jump is executed.
+	 * If this worm hits impassable terrain, the jump is finished. The jump is also finished when 
+	 * this worm hits terrain adjacent to impassable terrain and has traveled at least its own 
+	 * radius in distance. Or when this worm has left this worm's world.
 	 * 
 	 * @param timeStep 
 	 * 			The time interval in which this worm will not pass any impassable terrain
@@ -651,7 +653,7 @@ public class Worm {
 	 * @post	The location of the worm is updated, if it is possible to jump.
 	 * 			| (new this).getY() == endjumpJumpStep[1]
 	 * @effect	If this worm partially overlaps with any pieces of food in this worm's world, 
-	 * 			it should those pieces of food have to be eaten by this worm and those pieces 
+	 * 			those pieces of food have to be eaten by this worm, and those pieces 
 	 * 			of food that have been eaten, are to be removed from this worm's world. This worm's 
 	 * 			radius also has to grow accordingly (this is done in the method this.eatFood())
 	 * 			| (new this).eatFood()
@@ -665,13 +667,13 @@ public class Worm {
 	 * 			| !this.canJump()
 	 */
 	public void jump(double timeStep) throws ArithmeticException {
-		double[] jumpStep = new double[2];
 		if (!canJump())
 			throw new ArithmeticException();
+		double[] jumpStep = new double[2];
 		jumpStep = this.getJumpStep(this.getJumpTime(timeStep));
 		this.x = jumpStep[0];
 		this.y = jumpStep[1];
-		this.actionPoints = 0;
+		this.setActionPoints(0);
 		this.eatFood();
 		if (!this.getWorld().liesInWorld(this.getX(), this.getY(), this.getRadius()))
 			this.getWorld().removeWormFromWorld(this);
@@ -690,8 +692,12 @@ public class Worm {
 			this.getWorld().startNextTurn();
 			return false;
 		}
-		return !(this.getWorld().isAdjacent(this.getX(), this.getY(),
-				this.getRadius()));
+		if(this.getWorld().isAdjacent(this.getX(), this.getY(),
+				this.getRadius()))
+			return false;
+		if (this.getWorld().isImpassable(this.getX(), this.getY(), this.getRadius()))
+			return false;
+		return true;
 	}
 
 	/**
@@ -725,9 +731,8 @@ public class Worm {
 					return;
 				}
 			}
-			this.hitPoints -= 3 * (int) Math.floor(oldY - this.getY());
+			this.setHitPoints(this.getHitPoints() - 3 * (int) Math.floor(oldY - this.getY()));
 		}
-		this.eatFood();
 	}
 
 	/**
@@ -737,6 +742,10 @@ public class Worm {
 	 * 			The yield with which this worm fires the weapon.
 	 * @post	This worm's Action Points have been reduced by the cost of Action Points of this worm's weapon.
 	 * 			| (new this).getActionPoints() == this.getActionPoints() - this.getProjectile().getActionPointsCost()
+	 * @effect	The x- and y-coordinates and orientation of the projectile that has to be fired has to be updated before this worm actually shoot.
+	 * 			| (new this).getProjectile().getX() == this.getX() + Math.cos(this.getOrientation()) * this.getRadius() &&
+	 * 			|	(new this).getProjectile().getY() == this.getY() + Math.sin(this.getOrientation()) * this.getRadius() &&
+	 * 			|		(new this).getProjectile().getOrietation() == this.getOrientation()
 	 * @throws	IllegalArgumentException
 	 * 			The yield is invalid (i.e. it doesn't lie in the interval [0, 100]).
 	 * 			| !(0 <= yield && yield <= 100)
@@ -745,19 +754,20 @@ public class Worm {
 	 * 			These things are the things tested in this.canShoot().
 	 * 			| !this.canShoot()
 	 */
-	public void shoot(int yield) {
+	public void shoot(int yield) throws IllegalArgumentException, ArithmeticException {
+		this.getProjectile().setX(
+				this.getX() + Math.cos(this.getOrientation())
+						* this.getRadius());
+		this.getProjectile().setY(
+				this.getY() + Math.sin(this.getOrientation())
+						* this.getRadius());
+		this.getProjectile().setOrientation(this.getOrientation());
 		if (!(0 <= yield && yield <= 100))
 			throw new IllegalArgumentException();
 		this.getProjectile().setForce(yield);
 		if (!canShoot())
 			throw new ArithmeticException();
-			this.getProjectile().setX(
-					this.getX() + Math.cos(this.getOrientation())
-							* this.getRadius());
-			this.getProjectile().setY(
-					this.getY() + Math.sin(this.getOrientation())
-							* this.getRadius());
-		this.getProjectile().jump(.0001); // timeStep from jump.
+		this.getProjectile().jump(GUIConstants.JUMP_TIME_STEP);
 		this.setActionPoints(this.getActionPoints()
 				- this.getProjectile().getActionPointsCost());
 	}
@@ -864,7 +874,7 @@ public class Worm {
 	 */
 	public static boolean isValidRadius(double radius) {
 		if (!(Double.isNaN(radius)))
-			return radius > MINIMAL_RADIUS;
+			return radius >= MINIMAL_RADIUS;
 		return false;
 	}
 
@@ -877,9 +887,12 @@ public class Worm {
 	 * 			|	&& (new this).getProjectile().isTerminated()
 	 * 			|		&& (new this).getProjectile() == null
 	 * 			|			&& (new this).team == null
-	 * 			|				&& (new this).isTerminated()
+	 * 			|				&& (new this).getWorld() == null
+	 * 			|					&& (new this).isTerminated()
 	 */
 	public void terminate() {
+		if(this.getWorld().getCurrentWorm() == this)
+			this.getWorld().startNextTurn();
 		for (Projectile weapon : this.collectionOfWeapons) {
 			weapon.terminate();
 			this.collectionOfWeapons.remove(weapon);
@@ -1055,6 +1068,9 @@ public class Worm {
 		int maxCounter = (int) Math
 				.ceil(2 * (divergenceSample / angleStepSize) + 1);
 		double[][] sampleMatrix = new double[maxCounter][5];
+		// The rows in this array store the information for different angles with 
+		// increment equal to the angleStepSize.
+		// The columns store information as follows:
 		// sampleMatrix[][0] is for storing the angle.
 		// sampleMatrix[][1] is for storing whether or not the actual
 		// Action Points of this worm are sufficient to execute the move at the
@@ -1191,9 +1207,10 @@ public class Worm {
 
 	/**
 	 * Function that checks whether or not this worm's jump is finished.
-	 * This worm's jump is finished when either one (or both) of the following is true:
-	 * - The worm hits adjacent terrain;
-	 * - The worm no longer lies in this worm's world.
+	 * This worm's jump is finished when at least one of the following is true:
+	 * - This worm hits impassable terrain;
+	 * - This worm hits adjacent terrain and this worm has at least traveled its own radius in distance;
+	 * - This worm no longer lies in this worm's world.
 	 * 
 	 * @param newX
 	 * 			The x-coordinate of this worm in its jump
@@ -1205,11 +1222,15 @@ public class Worm {
 	 * 			This worm is not yet done jumping
 	 */
 	private boolean isJumpFinished(double newX, double newY) {
-		boolean wormLiesInWorld = this.getWorld().liesInWorld(newX, newY,
-				this.getRadius());
-		boolean wormHitsAdjTerrain = this.getWorld().isAdjacent(newX, newY,
-				this.getRadius());
-		return (!wormLiesInWorld || wormHitsAdjTerrain);
+		if (this.getWorld().isImpassable(newX, newY, this.getRadius()))
+			return true;
+		if (this.getWorld().isAdjacent(newX, newY, this.getRadius()) && 
+				Math.sqrt(Math.pow(this.getX() - newX, 2) + Math.pow(this.getY() - newY, 2)) 
+				>= this.getRadius())
+			return true;
+		if (!this.getWorld().liesInWorld(newX, newY, this.getRadius()))
+			return true;
+		return false;
 	}
 	
 	/**
