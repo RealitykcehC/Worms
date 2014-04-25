@@ -4,28 +4,30 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Random;
 
+import be.kuleuven.cs.som.annotate.Basic;
+
 /**
  * A class that implements all the aspects of the game world.
  * 
  * @author Pieter Jan Vingerhoets & Matthijs Nelissen
- * @version 0.9
+ * @version 1.0
  */
 public class World {
 	/**
 	 * Declaration of variables.
 	 */
-	public static final double lowerBoundX = 0.0;
-	public static final double lowerBoundY = 0.0;
-	public static final double upperBoundX = Double.MAX_VALUE;
-	public static final double upperBoundY = Double.MAX_VALUE;
-	private final double maxUpperLimitRadiusWormInit = 1.0;
+	public static final double LOWER_BOUND_X = 0.0;
+	public static final double LOWER_BOUND_Y = 0.0;
+	public static final double UPPER_BOUND_X = Double.MAX_VALUE;
+	public static final double UPPER_BOUND_Y = Double.MAX_VALUE;
+	private final double MAX_UPPER_LIMIT_RADIUS_WORM_INIT = 1.0;
 	private double width, height;
 	private boolean[][] area;
 	private Random randomSeed;
 	private boolean passable, adjacent, impassable;
 	private boolean isStarted = false;
 	private ArrayList<Worm> collectionOfWorms = new ArrayList<Worm>();
-	private ArrayList<Food> collectionOfFoods = new ArrayList<Food>();
+	private ArrayList<Food> collectionOfFood = new ArrayList<Food>();
 	private ArrayList<Team> collectionOfTeams = new ArrayList<Team>();
 	private Worm currentWorm;
 
@@ -68,6 +70,7 @@ public class World {
 	 * @return this.width
 	 * 			The width of this world
 	 */
+	@Basic
 	public double getWidth() {
 		return this.width;
 	}
@@ -78,6 +81,7 @@ public class World {
 	 * @return this.height
 	 * 			The height of this world
 	 */
+	@Basic
 	public double getHeight() {
 		return this.height;
 	}
@@ -88,6 +92,7 @@ public class World {
 	 * @return this.randomSeed
 	 * 			The random seed generator for this world
 	 */
+	@Basic
 	public Random getRandomSeed() {
 		return this.randomSeed;
 	}
@@ -98,47 +103,34 @@ public class World {
 	 * @return this.currentWorm
 	 * 			The worm whose turn it currently is
 	 */
+	@Basic
 	public Worm getCurrentWorm() {
 		return this.currentWorm;
 	}
+	
+	/**
+	 * Function that returns the active projectile from this world.
+	 * 
+	 * @return this.getCurrentWorm().getProjectile()
+	 * 			The projectile that is active in this world
+	 */
+	@Basic
+	public Projectile getActiveProjectile() {
+		return this.getCurrentWorm().getProjectile();
+	}
 
 	/**
-	 * Function that returns all the food that is currently in this world.
+	 * Function that returns all the pieces of food that are currently in this world.
 	 * 
 	 * @return this.collectionOfFood
 	 * 			The collection of all the food in this world
 	 */
 	public Collection<Food> getFood() {
-		return this.collectionOfFoods;
+		return this.collectionOfFood;
 	}
-
+	
 	/**
-	 * Function that returns the name of the winner if that worm is playing solo.
-	 * This function will return the team's name of the worm(s) that has (have) won.
-	 * If there is no winner yet, this function will null.
-	 * 
-	 * @return nameOfWinner
-	 * 			The name of the winner of the game, if the last worm that is alive, is playing solo.
-	 * 			The name of the winner's team, if the only worms alive, are those of the same team.
-	 * @return null
-	 * 			The game isn't finished yet: there is no winner
-	 */
-	public String getWinner() {
-		if (isGameFinished()) {
-			for (Worm searchWinner : this.collectionOfWorms) {
-				if (searchWinner.isAlive()
-						&& searchWinner.getTeamName() == null)
-					return searchWinner.getName();
-				else if (searchWinner.isAlive()
-						&& searchWinner.getTeamName() != null)
-					return searchWinner.getTeamName();
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * Function that returns the teams in this world.
+	 * Function that returns all the teams in this world.
 	 * 
 	 * @return this.collectionOfTeams
 	 * 			The teams in this world.
@@ -156,7 +148,7 @@ public class World {
 	public Collection<Worm> getWorms() {
 		return this.collectionOfWorms;
 	}
-
+	
 	/**
 	 * Function that returns all objects (i.e. worms, food, teams, active projectile) in this world.
 	 * 
@@ -167,19 +159,34 @@ public class World {
 		ArrayList<Object> objectsList = new ArrayList<Object>();
 		objectsList.addAll(this.collectionOfWorms);
 		objectsList.addAll(this.collectionOfTeams);
-		objectsList.addAll(this.collectionOfFoods);
+		objectsList.addAll(this.collectionOfFood);
 		objectsList.add(this.getActiveProjectile());
 		return objectsList;
 	}
 
 	/**
-	 * Function that returns the active projectile from this world.
+	 * Function that returns the name of the winner if that worm is playing solo.
+	 * This function will return the team's name of the worm(s) that has (have) won.
+	 * If there is no winner yet, this function will null.
 	 * 
-	 * @return this.getCurrentWorm().getProjectile()
-	 * 			The projectile that is active in this world
+	 * @return nameOfWinner
+	 * 			The name of the winner of the game, if the last worm that is alive, is playing solo.
+	 * 			The name of the winner's team, if the only worms alive, are all of the same team.
+	 * @return null
+	 * 			The game isn't finished yet: there is no winner
 	 */
-	public Projectile getActiveProjectile() {
-		return this.getCurrentWorm().getProjectile();
+	public String getWinner() {
+		if (isGameFinished()) {
+			for (Worm searchWinner : this.collectionOfWorms) {
+				if (searchWinner.isAlive()
+						&& searchWinner.getTeamName() == null)
+					return searchWinner.getName();
+				else if (searchWinner.isAlive()
+						&& searchWinner.getTeamName() != null)
+					return searchWinner.getTeamName();
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -200,7 +207,7 @@ public class World {
 			return;
 		Random randomGen = new Random();
 		int oldNumberOfWorms = this.collectionOfWorms.size();
-		double radius = 0.25 + (this.maxUpperLimitRadiusWormInit - 0.25)
+		double radius = Worm.MINIMAL_RADIUS + (this.MAX_UPPER_LIMIT_RADIUS_WORM_INIT - Worm.MINIMAL_RADIUS)
 				* randomGen.nextDouble();
 		do {
 			double[] resultOfLocation = this.locateNewObject(radius);
@@ -227,15 +234,20 @@ public class World {
 	 * 			The worm that has to be removed from this world
 	 * @post	The worm that is provided has to be deleted from this world.
 	 * 			| (new this).getWorms().size() == this.getWorms().size() - 1 
-	 * 			|	&& !(new this).getWorms().contains(worm) && worm.isTerminated()
+	 * 			|	&& !(new this).getWorms().contains(worm) && (new worm).isTerminated()
+	 * @throws	IllegalArgumentException
+	 * 			The worm is the null reference.
+	 * 			| worm == null
 	 */
-	public void removeWormFromWorld(Worm worm) {
+	public void removeWormFromWorld(Worm worm) throws IllegalArgumentException {
+		if (worm == null)
+			throw new IllegalArgumentException();
 		worm.terminate();
 		this.collectionOfWorms.remove(worm);
 	}
 
 	/**
-	 * Function that adds a piece of food to this world.
+	 * Method that adds a piece of food to this world.
 	 * The position of the piece of food that is to be added is chosen arbitrarily, but will always be adjacent to impassable terrain.
 	 * Once the game has been started, it is no longer allowed to add any more additional pieces of food to this world.
 	 * 
@@ -246,14 +258,14 @@ public class World {
 	public void addFoodToWorld() {
 		if (this.isStarted())
 			return;
-		int oldNumberOfFood = this.collectionOfFoods.size();
+		int oldNumberOfFood = this.collectionOfFood.size();
 		do {
-			double[] resultOfLocation = this.locateNewObject(Food.radius);
+			double[] resultOfLocation = this.locateNewObject(Food.RADIUS);
 			if (resultOfLocation[0] != -1)
 				// Other values of the result are trivial once the first is -1.
-				this.collectionOfFoods.add(new Food(this, resultOfLocation[0],
+				this.collectionOfFood.add(new Food(this, resultOfLocation[0],
 						resultOfLocation[1]));
-		} while (this.collectionOfFoods.size() != oldNumberOfFood + 1);
+		} while (this.collectionOfFood.size() != oldNumberOfFood + 1);
 	}
 
 	/**
@@ -263,15 +275,20 @@ public class World {
 	 * 			The piece of food that has to be removed from this world.
 	 * @post	The piece of food that is provided has to be deleted from this world.
 	 * 			| (new this).getFood().size() == this.getFood().size() - 1 
-	 * 			|	&& !(new this).getFood().contains(food) && food.isTerminated()
+	 * 			|	&& !(new this).getFood().contains(food) && (new food).isTerminated()
+	 * @throws	IllegalArgumentException
+	 * 			The piece of food is the null reference.
+	 * 			| food == null
 	 */
-	public void removeFoodFromWorld(Food food) {
+	public void removeFoodFromWorld(Food food) throws IllegalArgumentException {
+		if (food == null)
+			throw new IllegalArgumentException();
 		food.terminate();
-		this.collectionOfFoods.remove(food);
+		this.collectionOfFood.remove(food);
 	}
 
 	/**
-	 * Function that adds a new team of worms to this world, when it is possible (no more than 10 teams can be added to this world).
+	 * Method that adds a new team of worms to this world, when it is possible (no more than 10 teams can be added to this world).
 	 * 
 	 * @param newName
 	 * 			The name of the new team
@@ -280,13 +297,30 @@ public class World {
 	 * 			|	&& (new this).getTeams().size() <= 10 
 	 * 			|		&& (new this).getTeams().get((new this).getTeams().size() - 1) == newTeam
 	 * 			|			&& (new this).getTeams().get((new this).getTeams().size() - 1).equals(newName)
+	 * @throws	RuntimeException
+	 * 			There cannot be another team: the maximum amount of teams is 10.
+	 * 			| !this.canCreateTeam()
 	 */
-	public void addEmptyTeam(String newName) {
-		if (this.canCreateTeam())
-			this.collectionOfTeams.add(new Team(newName));
+	public void addEmptyTeam(String newName) throws RuntimeException {
+		if (!this.canCreateTeam())
+			throw new RuntimeException();
+		this.collectionOfTeams.add(new Team(newName));
 	}
 	
-	public void removeProjectileFromWorld(Projectile projectile) {
+	/**
+	 * Method that removes the provided projectile from this world.
+	 * 
+	 * @param projectile
+	 * 			The projectile that has to be removed from this world
+	 * @post	The provided projectile must be terminated.
+	 * 			| (new projectile).isTerminated()
+	 * @throws	IllegalArgumentException
+	 * 			The projectile is the null reference.
+	 * 			| projectile == null
+	 */
+	public void removeProjectileFromWorld(Projectile projectile) throws IllegalArgumentException {
+		if (projectile == null)
+			throw new IllegalArgumentException();
 		projectile.terminate();
 	}
 
@@ -299,16 +333,20 @@ public class World {
 	 * 			The x-coordinate of the food that has to be created
 	 * @param y
 	 * 			The y-coordinate of the food that has to be created
+	 * @post	The newly created piece of food has to be a part of this world.
+	 * 			| (new this).getFood().size() == this.getFood().size() + 1 &&
+	 * 			|	(new this).getFood().get((new this).getFood().size() - 1) == newFood
 	 * @return newFood
 	 * 			The newly created food
+	 * @throws	RuntimeException
+	 * 			The game has already been started.
+	 * 			| this.isStarted()
 	 */
 	public Food createFood(double x, double y) throws RuntimeException {
 		if (this.isStarted())
 			throw new RuntimeException();
-		if (!this.liesInWorld(x, y, Food.radius))
-			throw new IllegalArgumentException();
-		this.collectionOfFoods.add(new Food(this, x, y));
-		return this.collectionOfFoods.get(this.collectionOfFoods.size() - 1);
+		this.collectionOfFood.add(new Food(this, x, y));
+		return this.collectionOfFood.get(this.collectionOfFood.size() - 1);
 	}
 
 	/**
@@ -331,13 +369,14 @@ public class World {
 	 * 			|	&& (new this).getWorms().get((new this).getWorms().size() - 1) == newWorm
 	 * @return newWorm
 	 * 			The newly created worm
+	 * @throws	RuntimeException
+	 * 			The game has already been started.
+	 * 			| this.isStarted()
 	 */
 	public Worm createWorm(double x, double y, double direction, double radius,
 			String name) throws RuntimeException {
 		if (this.isStarted())
 			throw new RuntimeException();
-		if(!isValidWidth(x)||!isValidHeight(y))
-			throw new IllegalArgumentException();
 		Worm worm = new Worm(this, x, y, direction, radius, name);
 		this.collectionOfWorms.add(worm);
 		return worm;
@@ -345,7 +384,7 @@ public class World {
 
 	/**
 	 * Method that starts the game.
-	 * This method sets the state of the game in this world to started and it also selects the 
+	 * This method sets the state of the game in this world to "started" and it also selects the 
 	 * first worm that will be allowed to do player-controlled actions.
 	 * If there are currently no worms in this world, the game will end.
 	 * 
@@ -366,6 +405,18 @@ public class World {
 	 * Each new turn, the worm whose turn it is, is healed for 10 Hit Points and its 
 	 * Action Points are reset to the maximum amount of Action Points that worm can have.
 	 * The next worm's turn cannot start, until the active projectile of this world has been terminated.
+	 * 
+	 * @effect	First of all, the active projectile is removed from this world, if this didn't happen already.
+	 * 			The next worm is selected. This worm's Hit Points is increased by 10 and its Action Points is set 
+	 * 			to the maximum amount of Action Points.
+	 * 			| if (!this.getActiveProjectile().isTerminated())
+	 * 			|	then (this.removeProjectileFromWorld(this.getActiveProjectile()))
+	 * 			| (((new this).getCurrentWorm() == this.getWorms().get((this.getWorms().indexOf(this
+	 *			|	.getCurrentWorm()) + 1) % getWorms().size()))
+	 *			| 		&& ((new this).getCurrentWorm().getHitPoints() == this.getWorms().get(this.getWorms().
+	 *			|			indexOf(this.getCurrentWorm() + 1) % this.getWorms().size()).getHitPoints() + 10)
+	 *			|				&& ((new this).getCurrentWorm().getActionPoints() == this.getWorms().get(this.getWorms().
+	 *			|					indexOf(this.getCurrentWorm() + 1) % this.getWorms().size()).getMaxActionPoints()))
 	 */
 	public void startNextTurn() {
 		if (!this.getActiveProjectile().isTerminated())
@@ -442,8 +493,8 @@ public class World {
 	}
 
 	/**
-	 * Function that checks whether or not the game is finished, i.e. a team or an individual worm has 
-	 * won and is the only survivor.
+	 * Function that checks whether or not the game is finished, i.e. a team (all remaining worms are from the same team) 
+	 * or an individual worm (that worm is the only survivor and is not part of a team) has won.
 	 * 
 	 * @return true
 	 * 			The game is finished
@@ -453,6 +504,8 @@ public class World {
 	public boolean isGameFinished() {
 		if (!this.isStarted())
 			return false;
+		if (this.getWorms().size() == 1)
+			return true;
 		boolean finishedVerification = true;
 		boolean solo = false;
 		for (Worm potentialWinner : this.collectionOfWorms) {
@@ -492,8 +545,8 @@ public class World {
 	 * 			The object, whose properties were used, doesn't lie in this world
 	 */
 	public boolean liesInWorld(double x, double y, double radius) {
-		return ((x + radius <= this.getWidth()) && (x - radius >= lowerBoundX)
-				&& (y + radius <= this.getHeight()) && (y - radius >= lowerBoundY));
+		return ((x + radius <= this.getWidth()) && (x - radius >= LOWER_BOUND_X)
+				&& (y + radius <= this.getHeight()) && (y - radius >= LOWER_BOUND_Y));
 	}
 
 	/**
@@ -506,7 +559,7 @@ public class World {
 	 */
 	public static boolean isValidWidth(double width) {
 		if (!Double.isNaN(width))
-			if (lowerBoundX <= width && width <= upperBoundX)
+			if (LOWER_BOUND_X <= width && width <= UPPER_BOUND_X)
 				return true;
 		return false;
 	}
@@ -521,11 +574,21 @@ public class World {
 	 */
 	public static boolean isValidHeight(double height) {
 		if (!Double.isNaN(height))
-			if (lowerBoundY <= height && height <= upperBoundY)
+			if (LOWER_BOUND_Y <= height && height <= UPPER_BOUND_Y)
 				return true;
 		return false;
 	}
 
+	/**
+	 * Function that calculates the position of a new object in this world with arbitrarily generated properties.
+	 * The object will always be located on terrain adjacent to impassable terrain.
+	 * 
+	 * @param radius
+	 * 			The radius the object has to have.
+	 * @return locationArray
+	 * 			The array containing the following properties that the randomly placed object should get:
+	 * 			the x-coordinate, the y-coordinate and the orientation
+	 */
 	private double[] locateNewObject(double radius) {
 		Random randomGen = new Random();
 		double initX = 0, initY = 0;
@@ -536,19 +599,19 @@ public class World {
 		if (random == 1 || random == 2) { // Lower and upper side as
 											// starting point.
 			initX = (this.getWidth() - 3.0 * radius) * randomGen.nextDouble()
-					+ radius * 1.5;
+					+ radius * 1.5; // Make sure no OutOfBoundsException when radius is out of world.
 			if (random == 1) // Upper side.
-				initY = this.getHeight() - radius * 1.5;
+				initY = this.getHeight() - radius * 1.5; // Make sure no OutOfBoundsException when radius is out of world.
 			if (random == 2) // Lower side.
-				initY = radius * 1.5;
+				initY = radius * 1.5; // Make sure no OutOfBoundsException when radius is out of world.
 		} else if (random == 3 || random == 4) { // Left and right side as
 													// starting point.
 			initY = (this.getHeight() - 3.0 * radius) * randomGen.nextDouble()
-					+ radius * 1.5;
+					+ radius * 1.5; // Make sure no OutOfBoundsException when radius is out of world.
 			if (random == 3) // Left side.
-				initX = radius * 1.5;
+				initX = radius * 1.5; // Make sure no OutOfBoundsException when radius is out of world.
 			if (random == 4) // Right side.
-				initX = this.getWidth() - radius * 1.5;
+				initX = this.getWidth() - radius * 1.5; // Make sure no OutOfBoundsException when radius is out of world.
 		}
 		xPos = initX;
 		yPos = initY;
@@ -618,6 +681,16 @@ public class World {
 		return result;
 	}
 
+	/**
+	 * Method that calculates the pixel-coordinates for the given metric coordinates and returns the result.
+	 * 
+	 * @param x
+	 * 			The given metric x-coordinate
+	 * @param y
+	 * 			The given metric y-coordinate
+	 * @return result
+	 * 			An array containing the pixel-coordinates that are equal to those given in metric coordinates
+	 */
 	private int[] metricToPixels(double x, double y) {
 		double heightPerPixel = this.getHeight() / this.area.length;
 		double widthPerPixel = this.getWidth() / this.area[0].length;
@@ -653,7 +726,7 @@ public class World {
 		this.impassable = false;
 		this.adjacent = false;
 		this.passable = true;
-		for (int i = 0; i < 360; i++) {
+		for (int i = 0; i < 360; i += 10) {
 			circleX = radius * Math.cos(Math.toRadians(i));
 			circleY = radius * Math.sin(Math.toRadians(i));
 			int[] objectCircleToPixels = metricToPixels(x + circleX, y
@@ -673,10 +746,27 @@ public class World {
 		}
 	}
 
+	/**
+	 * Method that returns whether or not any more teams can be created in this world or not.
+	 * No teams are allowed to be created if there already are 10 teams in this world or once the game has been started.
+	 * 
+	 * @return true
+	 * 			Another team can be created in this world
+	 * @return false
+	 * 			No more teams are allowed to be created in this world
+	 */
 	private boolean canCreateTeam() {
 		return (this.collectionOfTeams.size() < 10 && !this.isStarted());
 	}
 
+	/**
+	 * Function that return the boolean value that stores whether or not the game has already been started in this world.
+	 * 
+	 * @return true
+	 * 			The game has already been started in this world
+	 * @return false
+	 * 			The game has not been started yet in this world
+	 */
 	private boolean isStarted() {
 		return this.isStarted;
 	}
