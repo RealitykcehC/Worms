@@ -29,18 +29,18 @@ public class Bazooka extends Projectile {
 	 * The constructor calls on the constructor of the superclass to be created.
 	 * 
 	 * @param worm
-	 * 			The worm that has to shoot
+	 * 			The worm to which this bazooka belongs
 	 * @post	The given worm must be equal to the worm that has to shoot.
 	 * 			| (new this).getWorm() == worm
-	 * @post	The given x must be equal to the x-coordinate of the worm that is being created.
+	 * @post	The x-coordinate has to be located at the radius of the worm to which this bazooka belongs, while respecting the orientation of the worm.
 	 * 			| (new this).getX() == worm.getX() + (Math.cos(worm.getOrientation()) * worm.getRadius())
-	 * @post	The given y must be equal to the y-coordinate of the worm that is being created.
+	 * @post	The y-coordinate has to be located at the radius of the worm to which this bazooka belongs, while respecting the orientation of the worm.
 	 * 			| (new this).getY() == worm.getY() + (Math.sin(worm.getOrientation()) * worm.getRadius())
-	 * @post	The given direction has to be equal to the orientation of the worm that is being created.
+	 * @post	The given direction has to be equal to the orientation of the worm.
 	 * 			The given direction first has to be recalculated to an angle in the interval [0, 2 * Math.PI[
 	 * 			| (new this).getOrientation() == worm.recalculateOrientation(worm.getOrientation())
 	 * @throws	IllegalArgumentException
-	 * 			The x- and y-coordinate of this projectile have to be valid x- and y-coordinates. If they are not, an exception has to be thrown.
+	 * 			The x- and y-coordinate of this bazooka have to be valid x- and y-coordinates. If they are not, an exception has to be thrown.
 	 * 			The functions concerning checking valid x- and y-coordinates are written in the class Worm.
 	 * 			| !Worm.isValidX(worm.getX() + (Math.cos(worm.getOrientation()) * worm.getRadius())) || 
 	 *			|	!Worm.isValidY(worm.getY() + (Math.sin(worm.getOrientation()) * worm.getRadius()))
