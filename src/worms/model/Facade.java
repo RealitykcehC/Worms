@@ -28,6 +28,9 @@ public class Facade implements IFacade {
 	 * @throws	ModelException
 	 * 			The name of the new team is null or less than 2 characters in length.
 	 * 			| !Team.isValidTeamName(newName)
+	 * @throws	ModelException
+	 * 			There are too many teams in the world.
+	 * 			| !world.canCreateTeam()
 	 */
 	@Override
 	public void addEmptyTeam(World world, String newName) throws ModelException {
@@ -35,7 +38,11 @@ public class Facade implements IFacade {
 			throw new ModelException("Invalid world: null");
 		if (!Team.isValidTeamName(newName))
 			throw new ModelException("Invalid team name");
-		world.addEmptyTeam(newName);
+		try {
+			world.addEmptyTeam(newName);
+		} catch (RuntimeException e) {
+			throw new ModelException("Too many teams");
+		}
 	}
 
 	/**
@@ -249,7 +256,7 @@ public class Facade implements IFacade {
 	}
 
 	/**
-	 * Function that returns the current worm of the provided worm.
+	 * Function that returns the current worm of the provided world.
 	 * 
 	 * @param world
 	 * 			The world whose active worm has to be returned
@@ -303,7 +310,7 @@ public class Facade implements IFacade {
 	}
 
 	/**
-	 * Function that returns the (x,y)-coordinates of the provided projectile at a given time in its jump.
+	 * Function that returns the (x,y)-coordinates of the provided projectile at a given time during its jump.
 	 * 
 	 * @param projectile
 	 * 			The projectile whose coordinates have to be returned after the provided time
@@ -329,7 +336,8 @@ public class Facade implements IFacade {
 	 * @param projectile
 	 * 			The projectile that will execute its jump
 	 * @param timeStep
-	 * 			The time interval in which the projectile will not pass any impassable terrain
+	 * 			A sufficiently small time interval to avoid that the projectile would pass through
+	 * 			impassable terrain during this interval
 	 * @return projectile.getJumpTime(timeStep)
 	 * 			The time the provided projectile will take to execute its jump
 	 * @throws	ModelException
@@ -350,7 +358,8 @@ public class Facade implements IFacade {
 	 * @param worm
 	 * 			The worm that will execute its jump
 	 * @param timeStep
-	 * 			The time interval in which the worm will not pass any impassable terrain
+	 * 			A sufficiently small time interval to avoid that the worm would pass through
+	 * 			impassable terrain during this interval
 	 * @return worm.getJumpTime(timeStep)
 	 * 			The time that it takes the provided worm to execute its jump
 	 * @throws	ModelException
@@ -712,7 +721,8 @@ public class Facade implements IFacade {
 	 * @param projectile
 	 * 			The projectile that has to jump
 	 * @param timeStep
-	 * 			The time interval in which the projectile will not pass any impassable terrain
+	 * 			A sufficiently small time interval to avoid that the projectile would pass through
+	 * 			impassable terrain during this interval
 	 * @effect	The projectile has to have traveled the needed distance.
 	 * 			| (new projectile).getX() == endjumpJumpStep[0]
 	 * 			|	&& (new projectile).getY() == endjumpJumpStep[1]
@@ -741,7 +751,8 @@ public class Facade implements IFacade {
 	 * @param worm
 	 * 			The worm that has to jump
 	 * @param timeStep
-	 * 			The time interval in which the worm will not pass any impassable terrain
+	 * 			A sufficiently small time interval to avoid that the worm would pass through
+	 * 			impassable terrain during this interval
 	 * @effect	The worm has to have traveled the needed distance.
 	 * 			| (new worm).getX() == endjumpJumpStep[0]
 	 * 			|	(new worm).getY() == endjumpJumpStep[1]
@@ -793,7 +804,7 @@ public class Facade implements IFacade {
 	 * 
 	 * @param worm
 	 * 			The worm that has to switch weapons
-	 * @post	The weapon should have changed weapons.
+	 * @post	The worm should have changed weapons.
 	 * 			| (new worm).getSelectedWeapon() != worm.getSelectedWeapon()
 	 * @throws	ModelException
 	 * 			The worm is an empty reference (a null pointer), an exception has to be thrown.
@@ -817,12 +828,24 @@ public class Facade implements IFacade {
 	 * @throws	ModelException
 	 * 			The worm is an empty reference (a null pointer), an exception has to be thrown.
 	 * 			| worm == null
+	 * @throws	ModelException
+	 * 			The worm cannot shoot anymore.
+	 * 			| !worm.canShoot()
+	 * @throws	ModelException
+	 * 			The yield is invalid.
+	 * 			| !(0 <= yield && yield && <= 100)
 	 */
 	@Override
 	public void shoot(Worm worm, int yield) throws ModelException {
 		if (worm == null)
 			throw new ModelException("Invalid worm: null");
-		worm.shoot(yield);
+		try {
+			worm.shoot(yield);
+		} catch (ArithmeticException e) {
+			throw new ModelException("This worm cannot shoot.");
+		} catch (IllegalArgumentException e) {
+			throw new ModelException("An invalid yield has been passed.");
+		}
 	}
 
 	/**
@@ -898,12 +921,14 @@ public class Facade implements IFacade {
 	}
 
 	/**
-	 * Function that returns the (x,y)-coordinates of the given worm in its jump at time t.
+	 * Function that returns the (x,y)-coordinates of the given worm during its jump at time t.
 	 * 
 	 * @param worm
-	 * 			The worm whose (x,y)-coordinates have to be calculated in its jump at time t.
+	 * 			The worm whose (x,y)-coordinates have to be calculated during its jump at time t.
 	 * @param t
 	 * 			The time t for which the (x,y)-coordinates of the given worm have to be be calculated.
+	 * @return worm.getJumpStep(t)
+	 * 			The (x,y)-coordinates of the provided worm in its jump at time t
 	 * @throws	ModelException
 	 * 			If worm is an empty reference (a null pointer), an exception has to be thrown.
 	 * 			| worm == null
@@ -935,7 +960,7 @@ public class Facade implements IFacade {
 	 * Function that returns the maximum action points of the given worm.
 	 * 
 	 * @param worm
-	 * 			The worm whose maximum Action Points has to be returned.
+	 * 			The worm whose maximum Action Points have to be returned.
 	 * @throws	ModelException
 	 * 			If worm is an empty reference (a null pointer), an exception has to be thrown.
 	 * 			| worm == null
