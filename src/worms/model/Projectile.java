@@ -19,7 +19,7 @@ import be.kuleuven.cs.som.annotate.Basic;
  * 			that has to shoot. The worm always has a valid orientation.
  * 			| 0 <= this.getWorm().getOrientation() && this.getWorm().getOrientation() < 2 * Math.PI
  * @author Pieter Jan Vingerhoets & Matthijs Nelissen
- * @version 0.9
+ * @version 1.0
  */
 public class Projectile {
 	/**
@@ -40,14 +40,14 @@ public class Projectile {
 	 * Constructor of the class Projectile.
 	 * 
 	 * @param worm
-	 * 			The worm that has to shoot.
+	 * 			The worm to which this projectile belongs
 	 * @post	The given worm must be equal to the worm that has to shoot.
 	 * 			| (new this).getWorm() == worm
-	 * @post	The given x must be equal to the x-coordinate of the worm that is being created.
+	 * @post	The x-coordinate has to be located at the radius of the worm to which this projectile belongs, while respecting the orientation of the worm.
 	 * 			| (new this).getX() == worm.getX() + (Math.cos(worm.getOrientation()) * worm.getRadius())
-	 * @post	The given y must be equal to the y-coordinate of the worm that is being created.
+	 * @post	The y-coordinate has to be located at the radius of the worm to which this projectile belongs, while respecting the orientation of the worm.
 	 * 			| (new this).getY() == worm.getY() + (Math.sin(worm.getOrientation()) * worm.getRadius())
-	 * @post	The given direction has to be equal to the orientation of the worm that is being created.
+	 * @post	The given direction has to be equal to the orientation of the worm.
 	 * 			The given direction first has to be recalculated to an angle in the interval [0, 2 * Math.PI[
 	 * 			| (new this).getOrientation() == worm.recalculateOrientation(worm.getOrientation())
 	 * @throws	IllegalArgumentException
@@ -232,15 +232,27 @@ public class Projectile {
 	}
 
 	/**
-	 * Function which will set the correct force of this projectile to be fired, according to the given yield.
+	 * Function which will define the correct force to fire this projectile, according to the given yield.
 	 * 
 	 * @param yield
 	 * 			The propulsion yield with which this projectile has to be fired
-	 * @post	The force has to have been calculated, according to the propulsion yield.
+	 * @post	The force must be calculated, according to the propulsion yield.
 	 * 			| (new this).getForce() == this.lowerForce + (this.upperForce - this.lowerForce) * (yield / 100)
 	 */
 	public void setForce(int yield) {
 		this.force = this.lowerForce + (this.upperForce - this.lowerForce) * (yield / 100);
+	}
+	
+	/**
+	 * Method that sets the orientation of this projectile to the given orientation.
+	 * 
+	 * @param orientation
+	 * 			The new orientation for this projectile
+	 * @post	The orientation of this projectile has been changed to the provided orientation.
+	 * 			| (new this).getOrientation() == orientation
+	 */
+	public void setOrientation(double orientation) {
+		this.direction = orientation;
 	}
 
 	/**
@@ -296,28 +308,23 @@ public class Projectile {
 
 	/**
 	 * Function which fires this projectile.
+	 * This projectile stops when it hits impassable terrain, leaves the game world or hits a worm.
 	 * 
-	 * @post	The x-coordinate of this projectile has to have been adjusted.
+	 * @post	The x-coordinate of this projectile must be adjusted.
 	 * 			| (new this).getX() == newX
-	 * @post	The y-coordinate of this projectile has to have been adjusted.
+	 * @post	The y-coordinate of this projectile must be adjusted.
 	 * 			| (new this).getY() == newY
 	 * @effect	If the projectile hits a worm, that worm's Hit Points have to be reduced (a worm cannot hit itself).
 	 * 			| this.hitsWorm()
 	 * @effect	At the end, this projectile has to be removed from the game world.
 	 * 			| (new this).getWorm().getWorld().removeProjectileFromWorld(this)
 	 * @throws	ArithmeticException
-	 * 			The x-coordinate, after having traveled the distance of the shot, has to be valid.
-	 * 			| !Worm.isValidX(this.getX() + this.getJumpDistance())
+	 * 			This projectile cannot jump.
+	 * 			| !this.canJump()
 	 */
 	public void jump(double timeStep) throws ArithmeticException {
 		if (!canJump())
 			throw new ArithmeticException();
-//		double[] jumpStep = new double[2];
-//		jumpStep = this.getJumpStep(this.getJumpTime(timeStep));
-//		this.x = jumpStep[0];
-//		this.y = jumpStep[1];
-//		if (!this.getWorm().getWorld().liesInWorld(this.getX(), this.getY(), this.getRadius()))
-//			this.getWorm().getWorld().removeProjectileFromWorld(this);
 		double newX = 0, newY = 0;
 		double[] jumpStep = new double[2];
 		double totalJumpTime = 0;
@@ -327,9 +334,7 @@ public class Projectile {
 			newY = jumpStep[1];
 			totalJumpTime += timeStep;
 		} while (!(this.isJumpFinished(newX, newY)));
-		this.hitsWorm();
-		if (this.isJumpFinished(this.getX(), this.getY()))
-			this.getWorm().getWorld().removeProjectileFromWorld(this);
+		this.getWorm().getWorld().removeProjectileFromWorld(this);
 	}
 
 	/**
@@ -338,14 +343,16 @@ public class Projectile {
 	 * @post	The Hit Points of the worm that has been hit have to be adjusted, according to the number of Hit Points that should be removed for a certain projectile.
 	 * 			| hitWorm.setHitPoints(hitWorm.getHitPoints() - this.getHitPointsReduction())
 	 */
-	public void hitsWorm() {
+	public boolean hitsWorm(double x, double y) {
 		for (Worm hitWorm : this.getWorm().getWorld().getWorms()) {
-			if (hitWorm != this.getWorm() && Math.sqrt(Math.pow((this.getX() - hitWorm.getX()), 2)
-					+ Math.pow((this.getY() - hitWorm.getY()), 2)) < this
+			if (hitWorm != this.getWorm() && Math.sqrt(Math.pow((x - hitWorm.getX()), 2)
+					+ Math.pow((y - hitWorm.getY()), 2)) < this
 					.getRadius() + hitWorm.getRadius()) {
 				hitWorm.setHitPoints(hitWorm.getHitPoints() - this.getHitPointsReduction());
+				return true;
 			}
 		}
+		return false;
 	}
 
 	/**
@@ -369,7 +376,6 @@ public class Projectile {
 	 * 			| (new this).isTerminated()
 	 */
 	public void terminate() {
-		this.worm = null;
 		this.isTerminated = true;
 	}
 
@@ -402,6 +408,7 @@ public class Projectile {
 				this.getRadius());
 		boolean projectileHitsImpTerrain = this.getWorm().getWorld().isImpassable(newX, newY,
 				this.getRadius());
-		return (!projectileLiesInWorld || projectileHitsImpTerrain);
+		boolean hasHitWorm = this.hitsWorm(newX, newY);
+		return (!projectileLiesInWorld || projectileHitsImpTerrain || hasHitWorm);
 	}
 }
